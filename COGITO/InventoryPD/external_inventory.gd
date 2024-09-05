@@ -1,7 +1,7 @@
 extends StaticBody3D
 
 @export var inventory_name : String = "Container"
-@export var inventory_data : InventoryPD
+@export var inventory_data : CogitoInventory
 @export var text_when_closed : String = "Open"
 @export var text_when_open : String = "Close"
 var interaction_text
@@ -22,10 +22,10 @@ func _ready():
 	interaction_nodes = find_children("","InteractionComponent",true) #Grabs all attached interaction components
 	interaction_text = text_when_closed
 	animation_player = $AnimationPlayer
+	inventory_data.apply_initial_inventory()
 
 func interact(_player):
 	toggle_inventory.emit(self)
-	
 
 func open():
 	if uses_animation:

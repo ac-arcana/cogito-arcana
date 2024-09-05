@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3 uid="uid://nqyrraqwixxy"]
 
-[ext_resource type="Script" path="res://COGITO/CogitoObjects/Cogito_Door.gd" id="1_fged4"]
+[ext_resource type="Script" path="res://COGITO/CogitoObjects/cogito_door.gd" id="1_fged4"]
 [ext_resource type="AudioStream" uid="uid://wfjccrp1mkra" path="res://COGITO/Assets/Audio/squidge316_sliding-door_01.ogg" id="2_n3bjk"]
 [ext_resource type="AudioStream" uid="uid://rmrsysovlvyo" path="res://COGITO/Assets/Audio/squidge316_sliding-door_02.ogg" id="3_bh3rj"]
 [ext_resource type="PackedScene" uid="uid://l61jtpfxu5x5" path="res://COGITO/Components/Interactions/BasicInteraction.tscn" id="4_rvjsd"]
@@ -107,7 +107,7 @@ script = ExtResource("1_fged4")
 open_sound = ExtResource("2_n3bjk")
 close_sound = ExtResource("3_bh3rj")
 auto_close_time = 2.0
-is_sliding = true
+door_type = 1
 open_position = Vector3(0, 0, -1.44)
 door_speed = 0.3
 
