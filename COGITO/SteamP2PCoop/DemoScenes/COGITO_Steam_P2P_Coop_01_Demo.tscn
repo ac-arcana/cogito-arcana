@@ -17,16 +17,16 @@
 process_mode = 3
 script = ExtResource("1_h6p3p")
 
+[node name="MultiplayerPlayerSpawner" type="MultiplayerSpawner" parent="."]
+spawn_path = NodePath(".")
+script = ExtResource("5_oudq7")
+player_scene = ExtResource("6_mrt2a")
+
 [node name="MultiplayerLevelSpawner" type="MultiplayerSpawner" parent="."]
 spawn_path = NodePath(".")
 script = ExtResource("3_nst55")
 start_level = ExtResource("4_nkyeu")
 multiplayer_pause_menu = ExtResource("4_1yimj")
-
-[node name="MultiplayerPlayerSpawner" type="MultiplayerSpawner" parent="."]
-spawn_path = NodePath(".")
-script = ExtResource("5_oudq7")
-player_scene = ExtResource("6_mrt2a")
 
 [node name="CogitoSynchronizers" type="Node" parent="."]
 
