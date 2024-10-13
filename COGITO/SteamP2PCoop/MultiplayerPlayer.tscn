@@ -1,10 +1,19 @@
-[gd_scene load_steps=9 format=3 uid="uid://cdw763d6olrcm"]
+[gd_scene load_steps=11 format=3 uid="uid://cdw763d6olrcm"]
 
-[ext_resource type="PackedScene" uid="uid://kicjwmh02uwf" path="res://COGITO/PrefabScenes/player.tscn" id="1_kpc5f"]
+[ext_resource type="PackedScene" uid="uid://kicjwmh02uwf" path="res://COGITO/PackedScenes/cogito_player.tscn" id="1_kpc5f"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/multiplayer_player.gd" id="2_0gpnc"]
-[ext_resource type="Script" path="res://COGITO/SteamP2PCoop/multiplayer_camera.gd" id="3_pg1i5"]
+[ext_resource type="Script" path="res://COGITO/InventoryPD/cogito_inventory.gd" id="3_5d5aw"]
+[ext_resource type="PackedScene" uid="uid://bybi44wiigdhp" path="res://COGITO/SteamP2PCoop/Menus/MultiplayerPauseMenu.tscn" id="4_7hgxx"]
 [ext_resource type="Material" uid="uid://c4rvflucftsrl" path="res://COGITO/DynamicFootstepSystem/Assets/Materials/Example_Wood.tres" id="4_d2a6w"]
 [ext_resource type="Material" uid="uid://dkbgl3p3ffd1" path="res://COGITO/Assets/Materials/Prototype_DarkGrey.tres" id="5_5o2oq"]
+
+[sub_resource type="Resource" id="Resource_k2flf"]
+resource_local_to_scene = true
+script = ExtResource("3_5d5aw")
+grid = true
+starter_inventory = Array[Resource("res://COGITO/InventoryPD/CustomResources/InventorySlotPD.gd")]([])
+inventory_size = Vector2i(5, 3)
+inventory_slots = Array[Resource("res://COGITO/InventoryPD/CustomResources/InventorySlotPD.gd")]([null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_do35g"]
 properties/0/path = NodePath(".:sync_position")
@@ -29,16 +38,17 @@ size = Vector3(0.5, 0.25, 0.5)
 [node name="PlayerP2PCoop" instance=ExtResource("1_kpc5f")]
 script = ExtResource("2_0gpnc")
 sync_weight = 0.2
-
-[node name="Camera" parent="Neck/Head/Eyes" index="1"]
-script = ExtResource("3_pg1i5")
+pause_menu = NodePath("MultiplayerPauseMenu")
+inventory_data = SubResource("Resource_k2flf")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." index="15"]
 replication_interval = 0.1
 delta_interval = 0.1
 replication_config = SubResource("SceneReplicationConfig_do35g")
 
-[node name="PlayerModel" type="Node3D" parent="." index="17"]
+[node name="MultiplayerPauseMenu" parent="." index="17" instance=ExtResource("4_7hgxx")]
+
+[node name="PlayerModel" type="Node3D" parent="." index="18"]
 
 [node name="PlayerCapsuleMeshInstance3D" type="MeshInstance3D" parent="PlayerModel" index="0"]
 mesh = SubResource("CapsuleMesh_vlq2o")
@@ -47,8 +57,3 @@ skeleton = NodePath("../..")
 [node name="PlayerGlassesMeshInstance3D" type="MeshInstance3D" parent="PlayerModel/PlayerCapsuleMeshInstance3D" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.667003, -0.0824701)
 mesh = SubResource("BoxMesh_6opph")
-
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." index="16"]
-replication_interval = 0.1
-delta_interval = 0.1
-replication_config = SubResource("SceneReplicationConfig_do35g")

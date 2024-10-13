@@ -54,11 +54,13 @@ func _spawn_player(id = 1) -> Node:
 	
 	if id == multiplayer.get_unique_id():
 		
-		var player_hud = get_tree().root.find_child("Player_HUD", true, false)
-		player.player_hud = player_hud.get_path()
-		player_hud.setup_player.call_deferred(player)
-		var pause_menu = get_tree().root.find_child("MultiplayerPauseMenu", true, false).get_path()
-		player.pause_menu = pause_menu
+		## Old code that was used to inject the hud and multiplayer menu
+		## From a time when they were not part of the player prefab
+		#var player_hud = get_tree().root.find_child("Player_HUD", true, false)
+		#player.player_hud = player_hud.get_path()
+		#player_hud.setup_player.call_deferred(player)
+		#var pause_menu = get_tree().root.find_child("MultiplayerPauseMenu", true, false).get_path()
+		#player.pause_menu = pause_menu
 		
 		## set the new player to the same position and rotation as the old player
 		player.position = player_position

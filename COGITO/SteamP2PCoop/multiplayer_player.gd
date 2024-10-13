@@ -12,6 +12,14 @@ func _enter_tree():
 	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		set_multiplayer_authority(name.to_int())
 	_disable_local_playermodel()
+	
+	#immediately remove the pause menu attached to the COGTIO Player we inherit
+	find_child("PauseMenu").queue_free()
+	
+	#remove menu and HUD components if we are a client
+	if not is_multiplayer_authority():
+		find_child("MultiplayerPauseMenu").queue_free()
+		find_child("Player_HUD").queue_free()
 
 
 func _input(event):
