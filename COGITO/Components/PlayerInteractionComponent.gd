@@ -15,11 +15,14 @@ var device_id: int = -1  # Used for displaying correct input prompts depending o
 
 ## Raycast3D for interaction check.
 @export var interaction_raycast: InteractionRayCast
+
+
 var interactable: # Updated via signals from InteractionRayCast
 	set = _set_interactable
 
 var carried_object = null:  # Used for carryable handling.
 	set = _set_carried_object
+	
 var is_carrying: bool:
 	get: return carried_object != null
 ## Power with which object are thrown (opposed to being dropped)
@@ -35,6 +38,7 @@ var equipped_wieldable_node = null
 var wieldable_was_on: bool = false
 var is_wielding: bool:
 	get: return equipped_wieldable_item != null
+	
 var player_rid
 
 
@@ -95,21 +99,31 @@ func _handle_interaction(action: String) -> void:
 			if node.input_map_action == action and not node.is_disabled:
 				if !node.ignore_open_gui and get_parent().is_showing_ui:
 					return
-					
 				node.interact(self)
-				# Update the prompts after an interaction. This is especially crucial for doors and switches.
-				_rebuild_interaction_prompts()
+				
+				#Dual interaction components need to await signal to update correctly
+				if node is DualInteraction:
+					await node.interaction_complete  # Wait until the interaction_complete signal is recieved
+					_rebuild_interaction_prompts()  # rebuild prompt after signal is received
+				else:
+					# Update the prompts after an interaction. This is especially crucial for doors and switches.
+					_rebuild_interaction_prompts()
 				break
+
+
+func is_interaction_raycast_colliding() -> bool:
+	if interaction_raycast.is_colliding():
+		return true
+	else:
+		return false
 
 
 ## Helper function to always get raycast destination point
 func get_interaction_raycast_tip(distance_offset: float) -> Vector3:
 	var destination_point = interaction_raycast.global_position + (interaction_raycast.target_position.z - distance_offset) * get_viewport().get_camera_3d().get_global_transform().basis.z
 	if interaction_raycast.is_colliding():
-		if destination_point == interaction_raycast.get_collision_point():
-			return interaction_raycast.get_collision_point()
-		else:
-			return destination_point
+		#if destination_point == interaction_raycast.get_collision_point():
+		return interaction_raycast.get_collision_point()
 	else:
 		return destination_point
 
@@ -162,10 +176,10 @@ func attempt_action_primary(is_released: bool):
 	if equipped_wieldable_node == null:
 		print("Nothing equipped, but is_wielding was true. This shouldn't happen!")
 		return
-	if equipped_wieldable_item.charge_current == 0:
-		send_hint(null, equipped_wieldable_item.name + " is out of ammo.")
-	else:
-		equipped_wieldable_node.action_primary(equipped_wieldable_item, is_released)
+	#if equipped_wieldable_item.charge_current == 0:
+		#send_hint(null, equipped_wieldable_item.name + " is out of " + equipped_wieldable_item.ammo_item_name)
+	#else:
+	equipped_wieldable_node.action_primary(equipped_wieldable_item, is_released)
 
 
 func attempt_action_secondary(is_released: bool):

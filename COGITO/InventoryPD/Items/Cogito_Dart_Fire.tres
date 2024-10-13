@@ -9,6 +9,7 @@
 script = ExtResource("2_ujs5g")
 wieldable_scene = ExtResource("4_uut2u")
 no_reload = true
+hint_on_empty = ""
 charge_max = 1.0
 ammo_item_name = "Fire Dart"
 charge_current = 1.0
@@ -18,6 +19,7 @@ name = "Fire Dart"
 description = "Who needs matches if you got these."
 icon = ExtResource("1_w1vsy")
 is_stackable = true
+is_droppable = true
 stack_size = 5
 drop_scene = "res://COGITO/PackedScenes/Pickups/pickup_dart_fire.tscn"
 hint_text_on_use = ""

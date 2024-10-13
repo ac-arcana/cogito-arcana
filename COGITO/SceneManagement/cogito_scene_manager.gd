@@ -1,11 +1,21 @@
 extends Node
 
+## Emitted when a fade finishes
+signal fade_finished
+
 # Used to set active save slot. This could be set/modified, when selecting a save slot from the MainMenu.
 @export var _active_slot : String = "A"
 
 # Variables for player state
 @export var _current_player_node : Node
 @export var _player_state : CogitoPlayerState
+
+#Variables & Signals for Player siting
+@export var _current_sittable_node : Node
+signal sit_requested(Node)
+signal stand_requested()
+signal seat_move_requested(Node)
+
 # Used to pass a screenshot to the player state when saved. This is created by the TabMenu/PauseMenu
 @export var _screenshot_to_save : Image
 
@@ -23,11 +33,15 @@ enum CogitoSceneLoadMode {TEMP, LOAD_SAVE, RESET}
 @export var cogito_scene_state_prefix : String = "COGITO_scene_state_"
 @export var cogito_player_state_prefix : String = "COGITO_player_state_"
 
+@export var default_fade_duration : float = .4
+@export var fade_panel : Panel = null
+
 func _ready() -> void:
 	_player_state = get_existing_player_state(_active_slot) #Setting active slot (per default it's A)
 	_scene_state = get_existing_scene_state(_active_slot)
 	
 	reset_scene_states()
+	instantiate_fade_panel()
 
 
 func switch_active_slot_to(slot_name:String):
@@ -136,7 +150,15 @@ func load_player_state(player, passed_slot:String):
 
 		player.global_position = _player_state.player_position
 		player.body.global_rotation = _player_state.player_rotation
+		player.try_crouch = _player_state.player_try_crouch
+		# important: ensures the player isn't crouching on game load, regardless
+		# of whether the option "Toggle Crouching" is set to OFF or ON
+		player.is_crouching = player.try_crouch
 		
+		## Loading player sitting state
+		_player_state.load_sitting_state(player) 
+		_player_state.load_collision_shapes(player)
+		_player_state.load_node_transforms(player)
 		#Loading player interaction component state
 		var player_interaction_component_state = _player_state.interaction_component_state
 		for state_data in player_interaction_component_state:
@@ -145,6 +167,7 @@ func load_player_state(player, passed_slot:String):
 			player.player_interaction_component.set_state.call_deferred() #Calling this deferred as some state calls need to make sure the scene is finished loading.
 		
 		player.player_state_loaded.emit()
+		CogitoSceneManager.fade_in()
 	else:
 		print("CSM: Player state of slot ", passed_slot, " doesn't exist.")
 		
@@ -184,6 +207,7 @@ func save_player_state(player, slot:String):
 	_player_state.player_current_scene_path = _current_scene_path
 	_player_state.player_position = player.global_position
 	_player_state.player_rotation = player.body.global_rotation
+	_player_state.player_try_crouch = player.try_crouch
 	
 	## New way of saving attributes:
 	_player_state.clear_saved_attribute_data()
@@ -196,7 +220,10 @@ func save_player_state(player, slot:String):
 		var max_value = player.player_attributes[attribute].value_max
 		var attribute_data := Vector2(cur_value, max_value)
 		_player_state.add_player_attribute_to_state_data(attribute, attribute_data)
-
+	## Save player sitting state
+	_player_state.save_sitting_state(player)
+	_player_state.save_collision_shapes(player)
+	_player_state.save_node_transforms(player)
 	## Adding a screenshot
 	var screenshot_path : String = str(_player_state.player_state_dir + _active_slot + ".png")
 	if _screenshot_to_save:
@@ -248,8 +275,15 @@ func load_scene_state(_scene_name_to_load:String, slot:String):
 			if get_node(node_data["parent"]):
 				get_node(node_data["parent"]).add_child(new_object)
 				print("Adding to scene: ", new_object.get_name())
+				
 			new_object.position = Vector3(node_data["pos_x"],node_data["pos_y"],node_data["pos_z"])
 			new_object.rotation = Vector3(node_data["rot_x"],node_data["rot_y"],node_data["rot_z"])
+			# Restore physics properties if it's a RigidBody3D
+			if new_object is RigidBody3D:
+				if "linear_velocity_x" in node_data and "linear_velocity_y" in node_data and "linear_velocity_z" in node_data:
+					new_object.linear_velocity = Vector3(node_data["linear_velocity_x"], node_data["linear_velocity_y"], node_data["linear_velocity_z"])
+				if "angular_velocity_x" in node_data and "angular_velocity_y" in node_data and "angular_velocity_z" in node_data:
+					new_object.angular_velocity = Vector3(node_data["angular_velocity_x"], node_data["angular_velocity_y"], node_data["angular_velocity_z"])
 			# Set the remaining variables.
 			for data in node_data.keys():
 				if data == "filename" or data == "parent" or data == "pos_x" or data == "pos_y" or data == "pos_z" or data == "rot_x" or data == "rot_y" or data == "rot_z" or data == "item_charge":
@@ -259,24 +293,48 @@ func load_scene_state(_scene_name_to_load:String, slot:String):
 			if new_object.has_method("update_wieldable_data"): #Check if item is wieldable
 				print("Setting charge of ", new_object, " to ", node_data["item_charge"])
 				new_object.slot_data.inventory_item.charge_current = node_data["item_charge"]
+				
+			new_object.set_state.call_deferred()
+		
 		
 		#Loading states of objects in save_object_state
 		var array_of_state_data = _scene_state.saved_states
 		for state_data in array_of_state_data:
 			var node_to_set = get_node(state_data["node_path"])
-			# Set variables here
-			node_to_set.position = Vector3(state_data["pos_x"],state_data["pos_y"],state_data["pos_z"])
-			node_to_set.rotation = Vector3(state_data["rot_x"],state_data["rot_y"],state_data["rot_z"])
-			for data in state_data.keys():
-				if data == "filename" or data == "parent" or data == "pos_x" or data == "pos_y" or data == "pos_z" or data == "rot_x" or data == "rot_y" or data == "rot_z":
-					continue
-				node_to_set.set(data, state_data[data])
-			node_to_set.set_state()
-		
+			if node_to_set:
+				if node_to_set is RigidBody3D or node_to_set is CharacterBody3D or (node_to_set is CogitoSittable and node_to_set.physics_sittable):
+					var physics_state = PhysicsServer3D.body_get_direct_state(node_to_set.get_rid())
+					if physics_state:
+						var rid = node_to_set.get_rid()
+						var new_transform = physics_state.transform
+						new_transform.origin = Vector3(state_data["global_pos_x"], (state_data["global_pos_y"]), state_data["global_pos_z"])
+						var new_rotation = Vector3(state_data["rot_x"], state_data["rot_y"], state_data["rot_z"])
+						var rotation_quat = Quaternion.from_euler(new_rotation)
+						# Account for parent node rotation as this can affect node rotation
+						if node_to_set.get_parent():
+							var parent_global_transform = node_to_set.get_parent().global_transform
+							var parent_rotation = parent_global_transform.basis.get_rotation_quaternion()
+							rotation_quat = parent_rotation.inverse() * rotation_quat
+						new_transform.basis = Basis(rotation_quat)
+						node_to_set.call_deferred("set_global_transform", new_transform)
+						if "linear_velocity_x" in state_data and "linear_velocity_y" in state_data and "linear_velocity_z" in state_data:
+							node_to_set.linear_velocity = Vector3(state_data["linear_velocity_x"], state_data["linear_velocity_y"], state_data["linear_velocity_z"])
+						if "angular_velocity_x" in state_data and "angular_velocity_y" in state_data and "angular_velocity_z" in state_data:
+							node_to_set.angular_velocity = Vector3(state_data["angular_velocity_x"], state_data["angular_velocity_y"], state_data["angular_velocity_z"])
+				else:
+					# Handle non-physics nodes
+					node_to_set.position = Vector3(state_data["pos_x"], state_data["pos_y"], state_data["pos_z"])
+					node_to_set.rotation = Vector3(state_data["rot_x"], state_data["rot_y"], state_data["rot_z"])
+
+				# Set the remaining variables.
+				for data in state_data.keys():
+					if data == "filename" or data == "parent" or data == "pos_x" or data == "pos_y" or data == "pos_z" or data == "rot_x" or data == "rot_y" or data == "rot_z":
+						continue
+					node_to_set.set(data, state_data[data])
+				
+				node_to_set.set_state()
+
 		print("CSM: Loading scene state finished.")
-			
-	else:
-		print("CSM: Scene state doesn't exist.")
 
 
 func save_scene_state(_scene_name_to_save, slot: String):
@@ -298,8 +356,20 @@ func save_scene_state(_scene_name_to_save, slot: String):
 			if !node.has_method("save"): # Check the node has a save function.
 				print("persistent node '%s' is missing a save() function, skipped" % node.name)
 				continue
+				
+			# If the node is a RigidBody3D, then save the physics properties
+			if node is RigidBody3D:
+				var node_data = node.save()
+				node_data["linear_velocity_x"] = node.linear_velocity.x
+				node_data["linear_velocity_y"] = node.linear_velocity.y
+				node_data["linear_velocity_z"] = node.linear_velocity.z
+				node_data["angular_velocity_x"] = node.angular_velocity.x
+				node_data["angular_velocity_y"] = node.angular_velocity.y
+				node_data["angular_velocity_z"] = node.angular_velocity.z
+				_scene_state.add_node_data_to_array(node_data)
+			else:
+				_scene_state.add_node_data_to_array(node.save())
 		
-			_scene_state.add_node_data_to_array(node.save())
 	
 	# Saving states of objects
 	var state_nodes = get_tree().get_nodes_in_group("save_object_state")
@@ -320,6 +390,8 @@ func save_scene_state(_scene_name_to_save, slot: String):
 
 # Function to transition to another scene via the loading screen.
 func load_next_scene(target : String, connector_name: String, passed_slot: String, load_mode: CogitoSceneLoadMode) -> void:
+	# fade_out()
+	
 	var loading_screen = preload("res://COGITO/SceneManagement/LoadingScene.tscn").instantiate()
 	loading_screen.next_scene_path = target
 	loading_screen.connector_name = connector_name
@@ -450,3 +522,44 @@ func reset_scene_states():
 
 func _exit_tree() -> void:
 	delete_temp_saves()
+	
+	
+	
+func cogito_print(is_logging: bool, _class: String, _message: String) -> void:
+	if is_logging:
+		print("COGITO: ", _class, ": ", _message)
+
+
+### FUNCTIONS TO HANDLE SCREEN FADING
+
+func instantiate_fade_panel() -> void:
+	fade_panel = Panel.new()
+	
+	var black_stylebox := StyleBoxFlat.new()
+	black_stylebox.bg_color = Color.BLACK
+	
+	fade_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fade_panel.focus_mode = Control.FOCUS_NONE
+	fade_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fade_panel.set_modulate(Color.TRANSPARENT)
+	fade_panel.add_theme_stylebox_override("panel", black_stylebox)
+	
+	add_child(fade_panel)
+
+
+func fade_in(fade_duration:float = default_fade_duration) -> void:
+	fade_panel.set_modulate(Color.BLACK)
+	var fade_tween = get_tree().create_tween()
+	
+	fade_tween.tween_property(fade_panel, "modulate", Color.TRANSPARENT, fade_duration).set_trans(Tween.TRANS_CUBIC)
+	await fade_tween.finished
+	fade_finished.emit()
+
+
+func fade_out(fade_duration:float = default_fade_duration) -> void:
+	fade_panel.set_modulate(Color.TRANSPARENT)
+	var fade_tween = get_tree().create_tween()
+	
+	fade_tween.tween_property(fade_panel, "modulate", Color.BLACK, fade_duration).set_trans(Tween.TRANS_CUBIC)
+	await fade_tween.finished
+	fade_finished.emit()

@@ -2,13 +2,16 @@ extends Control
 
 signal drop_slot_data(slot_data : InventorySlotPD)
 
-@onready var inventory_ui = $InventoryUI
+@onready var inventory_ui = $VBoxContainer/InventoryUI
+@onready var player_currencies_ui = $VBoxContainer/PlayerCurrencies
 @onready var grabbed_slot_node = $GrabbedSlot
 @onready var external_inventory_ui = $ExternalInventoryUI
 @onready var hot_bar_inventory = $HotBarInventory
 @onready var info_panel = $InfoPanel
 @onready var item_name = $InfoPanel/MarginContainer/VBoxContainer/ItemName
 @onready var item_description = $InfoPanel/MarginContainer/VBoxContainer/ItemDescription
+@onready var drop_prompt: Control = $InfoPanel/MarginContainer/VBoxContainer/HBoxDrop
+
 
 ## Sound that plays as a generic error.
 @export var sound_error : AudioStream
@@ -20,13 +23,25 @@ var control_in_focus
 
 
 func _ready():
+	# Connect to signal that detects change of input device
+	InputHelper.device_changed.connect(_on_input_device_change)
+	# Calling this function once to set proper input icons
+	_on_input_device_change(InputHelper.device,InputHelper.device_index)
+	
 	is_inventory_open = false
 	info_panel.hide()
 	
 	grabbed_slot_node.set_mouse_filter(2) # Setting mouse filter to ignore.
 	grabbed_slot_node.set_focus_mode(0) # Setting focus mode to none.
 	grabbed_slot_node.visibility_changed.connect(update_grabbed_slot_position)
-	
+
+
+func _on_input_device_change(_device, _device_index):
+	if _device == "keyboard":
+		drop_prompt.hide()
+	else:
+		drop_prompt.show()
+
 
 func open_inventory():
 	if !is_inventory_open:
@@ -34,6 +49,7 @@ func open_inventory():
 		info_panel.hide()
 		get_viewport().gui_focus_changed.connect(_on_focus_changed)
 		inventory_ui.show()
+		player_currencies_ui.show()
 		if InputHelper.device_index != -1: # Check if gamepad is used
 			inventory_ui.slot_array[0].grab_focus() # Grab focus of inventory slot for gamepad users.
 #		inventory_interface.grabbed_slot_node.show()
@@ -53,6 +69,7 @@ func close_inventory():
 		is_inventory_open = false
 		get_viewport().gui_focus_changed.disconnect(_on_focus_changed)
 		inventory_ui.hide()
+		player_currencies_ui.hide()
 		if external_inventory_owner:
 			external_inventory_owner.close()
 		grabbed_slot_node.hide()
@@ -73,7 +90,11 @@ func _on_focus_changed(control: Control):
 		item_name.text = control_in_focus.item_data.name
 		item_description.text = control_in_focus.item_data.description
 		info_panel.global_position = control_in_focus.global_position + Vector2(0,control_in_focus.size.y)
-		#if InputHelper.device_index != -1: # Only showing info panel when using a controller.
+		
+		if control_in_focus.item_data.is_droppable:
+			drop_prompt.show()
+		else: drop_prompt.hide()
+
 		info_panel.show()
 		if !control.mouse_exited.is_connected(_slot_on_mouse_exit):
 			control.mouse_exited.connect(_slot_on_mouse_exit)
@@ -165,16 +186,23 @@ func on_inventory_button_press(inventory_data: CogitoInventory, index: int, acti
 		[null, "inventory_drop_item"]:
 			grabbed_slot_data = inventory_data.get_slot_data(index)
 			if grabbed_slot_data:
+				if !grabbed_slot_data.inventory_item.is_droppable:
+					print("Item is not droppable.")
+					Audio.play_sound(sound_error)
+					grabbed_slot_data = null
+					return
 				if grabbed_slot_data.inventory_item.has_method("update_wieldable_data") and grabbed_slot_data.inventory_item.is_being_wielded:
 				#if grabbed_slot_data.inventory_item.ItemType.WIELDABLE and grabbed_slot_data.inventory_item.is_being_wielded:
 					Audio.play_sound(sound_error)
 					print("Can't drop while wielding this item.")
 					grabbed_slot_data = null
 				else:
-					print("Dropping slot data via gamepad")
+					print("Dropping slot data via gamepad ")
 					grabbed_slot_data = inventory_data.grab_single_slot_data(index)
-					drop_slot_data.emit(grabbed_slot_data.create_single_slot_data(index))
+					drop_slot_data.emit(grabbed_slot_data.create_single_slot_data_gamepad_drop(index))
 					grabbed_slot_data = null
+					
+					
 		[_, "inventory_drop_item"]:
 			Audio.play_sound(sound_error)
 			print("Can't drop while moving an item.")
@@ -213,16 +241,23 @@ func _on_gui_input(event):
 			
 			match event.button_index:
 				MOUSE_BUTTON_LEFT:
+					if !grabbed_slot_data.inventory_item.is_droppable:
+						Audio.play_sound(sound_error)
+						print("This item isn't droppable.")
+						return
 					if grabbed_slot_data.inventory_item.has_method("update_wieldable_data") and grabbed_slot_data.inventory_item.is_being_wielded:
 					#if grabbed_slot_data.inventory_item.ItemType.WIELDABLE and grabbed_slot_data.inventory_item.is_being_wielded:
 						Audio.play_sound(sound_error)
 						print("Can't drop while wielding this item.")
 					else:
-						drop_slot_data.emit(grabbed_slot_data)
-						print("Dropping ", grabbed_slot_data)
-						grabbed_slot_data = null
+						drop_slot_data.emit(grabbed_slot_data.create_single_slot_data(grabbed_slot_data.origin_index))
+						if grabbed_slot_data.quantity < 1:
+							grabbed_slot_data = null
 					
 				MOUSE_BUTTON_RIGHT:
+					if !grabbed_slot_data.inventory_item.is_droppable:
+						print("This item isn't droppable.")
+						return
 					if grabbed_slot_data.inventory_item.has_method("update_wieldable_data") and grabbed_slot_data.inventory_item.is_being_wielded:
 					#if grabbed_slot_data.inventory_item.ItemType.WIELDABLE and grabbed_slot_data.inventory_item.is_being_wielded:
 						Audio.play_sound(sound_error)
