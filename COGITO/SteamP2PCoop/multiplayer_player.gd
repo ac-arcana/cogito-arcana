@@ -16,10 +16,15 @@ func _enter_tree():
 	#immediately remove the pause menu attached to the COGTIO Player we inherit
 	find_child("PauseMenu").queue_free()
 	
-	#remove menu and HUD components if we are a client
-	if not is_multiplayer_authority():
+	#only the multiplayer authority's camera should be active
+	if is_multiplayer_authority():
+		find_child("Camera").make_current()
+	else:
+		#remove menu and HUD components if we are a client
 		find_child("MultiplayerPauseMenu").queue_free()
 		find_child("Player_HUD").queue_free()
+		#ensure this camera is disabled
+		find_child("Camera").clear_current(true)
 
 
 func _input(event):
