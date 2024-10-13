@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Cogito"
-run/main_scene="res://COGITO/DemoScenes/COGITO_0_MainMenu.tscn"
+run/main_scene="res://COGITO/SteamP2PCoop/DemoScenes/COGITO_Steam_P2P_Coop_MainMenu.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 run/max_fps=120
 boot_splash/image="res://COGITO/COGITO_icon.png"
