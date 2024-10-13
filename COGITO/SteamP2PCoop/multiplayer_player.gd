@@ -11,6 +11,7 @@ func _enter_tree():
 	## when the game is starting single player mode we don't want to lose authority
 	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		set_multiplayer_authority(name.to_int())
+	_disable_local_playermodel()
 
 
 func _input(event):
@@ -36,3 +37,11 @@ func _client_sync():
 	global_rotation = global_rotation.lerp(sync_rotation, sync_weight)
 	velocity = sync_velocity
 	move_and_slide()
+
+
+func _disable_local_playermodel():
+	var player_model = $PlayerModel
+	if is_multiplayer_authority():
+		player_model.visible = false
+	else:
+		player_model.visible = true
