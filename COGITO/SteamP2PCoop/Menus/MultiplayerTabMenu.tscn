@@ -39,6 +39,25 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 15
 
+[node name="HBoxSettingsContainer" type="HBoxContainer" parent="Steam/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="Steam/ScrollContainer/VBoxContainer/HBoxSettingsContainer"]
+layout_mode = 2
+text = "Max Players: "
+
+[node name="MaxPlayersSpinBox" type="SpinBox" parent="Steam/ScrollContainer/VBoxContainer/HBoxSettingsContainer"]
+layout_mode = 2
+min_value = 1.0
+max_value = 32.0
+value = 32.0
+
+[node name="LobbyName" type="LineEdit" parent="Steam/ScrollContainer/VBoxContainer/HBoxSettingsContainer"]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+placeholder_text = "Lobby name"
+
 [node name="HostSteamButton" type="Button" parent="Steam/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 text = "Host via Steam"
@@ -81,6 +100,8 @@ text = "Host via LAN"
 layout_mode = 2
 text = "Join Localhost"
 
+[connection signal="value_changed" from="Steam/ScrollContainer/VBoxContainer/HBoxSettingsContainer/MaxPlayersSpinBox" to="Steam" method="_on_max_players_spin_box_value_changed"]
+[connection signal="text_submitted" from="Steam/ScrollContainer/VBoxContainer/HBoxSettingsContainer/LobbyName" to="Steam" method="_on_lobby_name_text_submitted"]
 [connection signal="pressed" from="Steam/ScrollContainer/VBoxContainer/HostSteamButton" to="Steam" method="_on_host_steam_button_pressed"]
 [connection signal="pressed" from="Steam/ScrollContainer/VBoxContainer/RefreshButton" to="Steam" method="_on_refresh_button_pressed"]
 [connection signal="pressed" from="LAN/ScrollContainer/VBoxContainer/HostLanButton" to="LAN" method="_on_host_lan_button_pressed"]

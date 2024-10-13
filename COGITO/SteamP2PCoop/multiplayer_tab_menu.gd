@@ -6,4 +6,4 @@ extends CogitoTabMenu
 
 ## called by the pause menu when this menu is opened
 func refresh_servers():
-	steam_p2p_connection_menu.open_lobby_list()
+	steam_p2p_connection_menu.open_lobby_list(null)

@@ -10,8 +10,10 @@ var player_hud : CogitoPlayerHudManager
 var multiplayer_player_spawner : MultiplayerPlayerSpawner
 
 var lobby_id : int = 0
+var lobby_max_players: int = 32
 var steam_peer := SteamMultiplayerPeer.new()
 
+var LOBBY_NAME: String = "COGITO"
 
 func _ready():
 	multiplayer_pause_menu = get_tree().root.find_child("MultiplayerPauseMenu", true, false)
@@ -20,16 +22,21 @@ func _ready():
 	steam_peer.lobby_created.connect(_on_lobby_created)
 	Steam.lobby_match_list.connect(_on_lobby_match_list)
 	Steam.lobby_joined.connect(_on_lobby_joined)
+	LOBBY_NAME = str(Steam.getPersonaName() + "'s Lobby")
 
 
 ## used to get a list of available lobbies to join
-func open_lobby_list():
+func open_lobby_list(name_filter):
 	## clear any previous lobbies
 	if lobbies_container.get_child_count() > 0:
 		for child in lobbies_container.get_children():
 			child.queue_free()
 	
 	Steam.addRequestLobbyListDistanceFilter(Steam.LOBBY_DISTANCE_FILTER_WORLDWIDE)
+	
+	if name_filter != null:
+		Steam.addRequestLobbyListStringFilter("name", LOBBY_NAME, 0)  ## WIP NAME SEARCH FILTER
+	
 	Steam.requestLobbyList()
 	print("Requesting Steam Lobby List")
 
@@ -53,7 +60,7 @@ func _on_lobby_match_list(lobbies):
 
 func _on_host_steam_button_pressed():
 	## lobby types: https://godotsteam.com/tutorials/lobbies/
-	steam_peer.create_lobby(SteamMultiplayerPeer.LOBBY_TYPE_PUBLIC, 32)
+	steam_peer.create_lobby(SteamMultiplayerPeer.LOBBY_TYPE_PUBLIC, lobby_max_players)
 	multiplayer.multiplayer_peer = steam_peer
 	print("Starting Host...")
 	player_hud._on_set_hint_prompt(multiplayer_hint_icon, "Starting Host...")
@@ -63,7 +70,7 @@ func _on_host_steam_button_pressed():
 func _on_lobby_created(connection_status, id):
 	if connection_status:
 		lobby_id = id
-		Steam.setLobbyData(lobby_id, "name", str(Steam.getPersonaName() + "'s Lobby"))
+		Steam.setLobbyData(lobby_id, "name", LOBBY_NAME)
 		Steam.setLobbyJoinable(lobby_id, true)
 		print("Lobby Created Successfully")
 		player_hud._on_set_hint_prompt(multiplayer_hint_icon, "Lobby Created Successfully")
@@ -90,4 +97,14 @@ func _on_lobby_joined(_this_lobby_id: int, _permissions: int, _locked: bool, _re
 
 ## called by the refresh button in the ui
 func _on_refresh_button_pressed():
-	open_lobby_list()
+	open_lobby_list(null)
+
+
+func _on_lobby_name_text_submitted(new_text):
+	LOBBY_NAME = new_text # Set Lobby name to input for Hosting
+	open_lobby_list(LOBBY_NAME) # Refresh lobby list using Lobby name as Search Filter
+
+
+func _on_max_players_spin_box_value_changed(value):
+	lobby_max_players = int(value)
+
