@@ -6,15 +6,6 @@
 [ext_resource type="Material" uid="uid://c4rvflucftsrl" path="res://COGITO/DynamicFootstepSystem/Assets/Materials/Example_Wood.tres" id="4_d2a6w"]
 [ext_resource type="Material" uid="uid://dkbgl3p3ffd1" path="res://COGITO/Assets/Materials/Prototype_DarkGrey.tres" id="5_5o2oq"]
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_vlq2o"]
-material = ExtResource("4_d2a6w")
-radius = 0.4
-height = 1.7
-
-[sub_resource type="BoxMesh" id="BoxMesh_6opph"]
-material = ExtResource("5_5o2oq")
-size = Vector3(0.5, 0.25, 0.5)
-
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_do35g"]
 properties/0/path = NodePath(".:sync_position")
 properties/0/spawn = true
@@ -26,6 +17,15 @@ properties/2/path = NodePath(".:sync_velocity")
 properties/2/spawn = true
 properties/2/replication_mode = 1
 
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_vlq2o"]
+material = ExtResource("4_d2a6w")
+radius = 0.4
+height = 1.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_6opph"]
+material = ExtResource("5_5o2oq")
+size = Vector3(0.5, 0.25, 0.5)
+
 [node name="PlayerP2PCoop" instance=ExtResource("1_kpc5f")]
 script = ExtResource("2_0gpnc")
 sync_weight = 0.2
@@ -33,10 +33,18 @@ sync_weight = 0.2
 [node name="Camera" parent="Neck/Head/Eyes" index="1"]
 script = ExtResource("3_pg1i5")
 
-[node name="PlayerCapsuleMeshInstance3D" type="MeshInstance3D" parent="." index="15"]
-mesh = SubResource("CapsuleMesh_vlq2o")
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." index="15"]
+replication_interval = 0.1
+delta_interval = 0.1
+replication_config = SubResource("SceneReplicationConfig_do35g")
 
-[node name="PlayerGlassesMeshInstance3D" type="MeshInstance3D" parent="PlayerCapsuleMeshInstance3D" index="0"]
+[node name="PlayerModel" type="Node3D" parent="." index="17"]
+
+[node name="PlayerCapsuleMeshInstance3D" type="MeshInstance3D" parent="PlayerModel" index="0"]
+mesh = SubResource("CapsuleMesh_vlq2o")
+skeleton = NodePath("../..")
+
+[node name="PlayerGlassesMeshInstance3D" type="MeshInstance3D" parent="PlayerModel/PlayerCapsuleMeshInstance3D" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.667003, -0.0824701)
 mesh = SubResource("BoxMesh_6opph")
 

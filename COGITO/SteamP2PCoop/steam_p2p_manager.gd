@@ -13,7 +13,7 @@ func _ready():
 	
 	## if steam did not initialize properly then shut down
 	if initialize_response['status'] > 0:
-		print("Failed to initialize Steam, shutting down: %s" % initialize_response)
+		printerr("Failed to initialize Steam, shutting down: %s" % initialize_response)
 		get_tree().quit()
 
 
