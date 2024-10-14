@@ -27,6 +27,7 @@ func _enter_tree():
 		#remove menu and HUD components if we are a client
 		find_child("MultiplayerPauseMenu").queue_free()
 		find_child("Player_HUD").queue_free()
+		find_child("PlayerInteractionComponent").queue_free()
 		#ensure this camera is disabled
 		find_child("Camera").clear_current(true)
 
