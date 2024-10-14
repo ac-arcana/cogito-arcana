@@ -10,8 +10,8 @@ extends MultiplayerSpawner
 ## key will be a variant data representing a player, key will be a node which is the player's node
 var players = {}
 
-var player_position : Vector3 = Vector3.ZERO
-var player_rotation : Vector3 = Vector3.ZERO
+var player_position := Vector3.ZERO
+var player_rotation := Quaternion.IDENTITY
 
 func _ready():
 	spawn_function = _spawn_player
@@ -33,7 +33,7 @@ func destroy_single_player():
 	
 	## save the position and rotation so that when a player is spawned, they can be in the correct location
 	player_position = (player as Node3D).global_position
-	player_rotation = (player as Node3D).global_rotation
+	player_rotation = (player as Node3D).find_child("Body").global_basis.get_rotation_quaternion()
 	
 	if player:
 		player.queue_free()
@@ -54,17 +54,9 @@ func _spawn_player(id = 1) -> Node:
 	
 	if id == multiplayer.get_unique_id():
 		
-		## Old code that was used to inject the hud and multiplayer menu
-		## From a time when they were not part of the player prefab
-		#var player_hud = get_tree().root.find_child("Player_HUD", true, false)
-		#player.player_hud = player_hud.get_path()
-		#player_hud.setup_player.call_deferred(player)
-		#var pause_menu = get_tree().root.find_child("MultiplayerPauseMenu", true, false).get_path()
-		#player.pause_menu = pause_menu
-		
 		## set the new player to the same position and rotation as the old player
 		player.position = player_position
-		player.rotation = player_rotation
+		player.find_child("Body").global_basis = player_rotation
 		## the connection mananger handled closing the menu, here we inform the new player of that
 		player._on_pause_menu_resume()
 		
