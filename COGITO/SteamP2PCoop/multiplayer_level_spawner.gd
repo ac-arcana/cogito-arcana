@@ -30,11 +30,12 @@ func _replace_pause_menu_with_mp_version():
 		return
 	
 	## the default pause menu does not have the mp options, remove it
+	var pause_menu_parent = pause_menu.get_parent()
 	pause_menu.queue_free()
 	
 	## now add the pause menu with mp options
 	var multiplayer_pause_menu_instance = multiplayer_pause_menu.instantiate()
-	add_child(multiplayer_pause_menu_instance)
+	pause_menu_parent.add_child(multiplayer_pause_menu_instance)
 	
 	## finally, hook the player up to the new pause menu
 	var player : CogitoPlayer = find_child("Player", true, false)

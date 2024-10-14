@@ -57,8 +57,6 @@ func _spawn_player(id = 1) -> Node:
 		## set the new player to the same position and rotation as the old player
 		player.position = player_position
 		player.find_child("Body").global_basis = player_rotation
-		## the connection mananger handled closing the menu, here we inform the new player of that
-		player._on_pause_menu_resume()
 		
 	return player
 
