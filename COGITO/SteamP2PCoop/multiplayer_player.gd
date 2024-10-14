@@ -54,7 +54,6 @@ func _owner_sync():
 func _client_sync():
 	global_position = global_position.lerp(sync_position, sync_weight)
 	body.global_basis = body.global_basis.slerp(sync_rotation, sync_weight)
-	print(body.global_rotation)
 	velocity = sync_velocity
 	move_and_slide()
 
