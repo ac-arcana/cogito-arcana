@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://catupiy4a6myb"]
+[gd_scene load_steps=13 format=3 uid="uid://catupiy4a6myb"]
 
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/steam_p2p_manager.gd" id="1_h6p3p"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/multiplayer_level_spawner.gd" id="3_nst55"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/Synchronizers/cogito_carryable_synchronizer.gd" id="9_qaj5n"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/Synchronizers/cogito_pickup_synchronizer.gd" id="10_m1xp7"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/Synchronizers/cogito_vehicle_synchronizer.gd" id="11_6tjh7"]
+[ext_resource type="Script" path="res://COGITO/SteamP2PCoop/Synchronizers/cogito_drop_synchronizer.gd" id="11_qp3b5"]
 
 [node name="SteamP2PCoopDemo" type="Node3D"]
 
@@ -47,6 +48,11 @@ level_spawner = NodePath("../../MultiplayerLevelSpawner")
 script = ExtResource("10_m1xp7")
 level_spawner = NodePath("../../MultiplayerLevelSpawner")
 
+[node name="CogitoDropSynchronizer" type="Node" parent="CogitoSynchronizers"]
+script = ExtResource("11_qp3b5")
+
 [node name="CogitoVehicleSynchronizer" type="Node" parent="CogitoSynchronizers" node_paths=PackedStringArray("level_spawner")]
 script = ExtResource("11_6tjh7")
 level_spawner = NodePath("../../MultiplayerLevelSpawner")
+
+[connection signal="local_player_spawned" from="MultiplayerPlayerSpawner" to="CogitoSynchronizers/CogitoDropSynchronizer" method="_on_multiplayer_player_spawner_local_player_spawned"]

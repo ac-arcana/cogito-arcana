@@ -1,3 +1,4 @@
+class_name MultiplayerPlayer
 extends CogitoPlayer
 ## Extend the player with multiplayer functionality
 

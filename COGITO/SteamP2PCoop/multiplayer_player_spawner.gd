@@ -2,7 +2,7 @@ class_name MultiplayerPlayerSpawner
 extends MultiplayerSpawner
 ## Spawn players for host and client into an MP game
 
-## TODO: Clients should be placed in the same location as the host when they join
+signal local_player_spawned(player : MultiplayerPlayer)
 
 @export var player_scene : PackedScene
 
@@ -20,6 +20,8 @@ func _ready():
 func spawn_player():
 
 		destroy_single_player()
+		#when this is first called to spawn the local player the signal was not emitted
+		#we manually emit the signal so that the drop synchronizer can pickup the player
 		spawn(1)
 		
 		if not multiplayer.peer_connected.is_connected(spawn):
@@ -53,10 +55,10 @@ func _spawn_player(id = 1) -> Node:
 		print("CLIENT: Player spawned with id: " + str(id))
 	
 	if id == multiplayer.get_unique_id():
-		
 		## set the new player to the same position and rotation as the old player
 		player.position = player_position
 		player.find_child("Body").global_basis = player_rotation
+		local_player_spawned.emit(player)
 		
 	return player
 
