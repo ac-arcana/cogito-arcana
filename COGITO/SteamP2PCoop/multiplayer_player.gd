@@ -1,6 +1,7 @@
 extends CogitoPlayer
 ## Extend the player with multiplayer functionality
 
+@export var multiplayer_synchronizer : MultiplayerSynchronizer
 @export var sync_weight : float = 0.2
 
 @export_group("Synced Vars")
@@ -11,11 +12,18 @@ extends CogitoPlayer
 ## Exported so the Multiplayer Synchronizer can see the variable
 @export var sync_velocity := Vector3.ZERO
 
+
+## Used to track if the position and rotation of the player have been synced yet
+## This is to prevent lerping from the starting sync values (0,0,0)
+var synced_after_spawn = false
+
 func _enter_tree():
 	## when the game is starting single player mode we don't want to lose authority
 	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		set_multiplayer_authority(name.to_int())
 	_disable_local_playermodel()
+	
+	multiplayer_synchronizer.synchronized.connect(_on_synchronized)
 	
 	#immediately remove the pause menu attached to the COGTIO Player we inherit
 	find_child("PauseMenu").queue_free()
@@ -31,6 +39,12 @@ func _enter_tree():
 		#ensure this camera is disabled
 		find_child("Camera").clear_current(true)
 
+func _on_synchronized():
+	if not synced_after_spawn:
+		#sync once before lerping.
+		global_position = sync_position
+		body.global_basis = sync_rotation
+	synced_after_spawn = true
 
 func _input(event):
 	if not is_multiplayer_authority():
@@ -52,8 +66,9 @@ func _owner_sync():
 	sync_velocity = velocity
 
 func _client_sync():
-	global_position = global_position.lerp(sync_position, sync_weight)
-	body.global_basis = body.global_basis.slerp(sync_rotation, sync_weight)
+	if synced_after_spawn:
+		global_position = global_position.lerp(sync_position, sync_weight)
+		body.global_basis = body.global_basis.slerp(sync_rotation, sync_weight)
 	velocity = sync_velocity
 	move_and_slide()
 

@@ -35,8 +35,9 @@ properties/2/path = NodePath(".:sync_velocity")
 properties/2/spawn = true
 properties/2/replication_mode = 1
 
-[node name="PlayerP2PCoop" instance=ExtResource("1_kpc5f")]
+[node name="PlayerP2PCoop" node_paths=PackedStringArray("multiplayer_synchronizer") instance=ExtResource("1_kpc5f")]
 script = ExtResource("2_0gpnc")
+multiplayer_synchronizer = NodePath("MultiplayerSynchronizer")
 sync_weight = 0.2
 sync_position = Vector3(0, 0, 0)
 sync_rotation = Quaternion(0, 0, 0, 1)
