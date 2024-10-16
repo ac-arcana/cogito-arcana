@@ -20,11 +20,12 @@ config/icon="res://COGITO/COGITO_icon.png"
 
 [autoload]
 
-MenuTemplateManager="*res://COGITO/EasyMenus/Nodes/menu_template_manager.tscn"
-InputHelper="*res://addons/input_helper/input_helper.gd"
 Audio="*res://addons/quick_audio/./Audio.gd"
-CogitoSceneManager="*res://COGITO/SceneManagement/cogito_scene_manager.gd"
-CogitoQuestManager="*res://COGITO/QuestSystem/cogito_quest_manager.gd"
+InputHelper="*res://addons/input_helper/input_helper.gd"
+CogitoMain="*res://addons/cogito/cogito_main.gd"
+CogitoSceneManager="*res://addons/cogito/SceneManagement/cogito_scene_manager.gd"
+CogitoQuestManager="*res://addons/cogito/QuestSystem/cogito_quest_manager.gd"
+MenuTemplateManager="*res://addons/cogito/EasyMenus/Nodes/menu_template_manager.tscn"
 
 [display]
 
@@ -36,7 +37,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/input_helper/plugin.cfg", "res://addons/quick_audio/plugin.cfg")
+enabled=PackedStringArray("res://addons/cogito/plugin.cfg", "res://addons/input_helper/plugin.cfg", "res://addons/quick_audio/plugin.cfg")
 
 [file_customization]
 

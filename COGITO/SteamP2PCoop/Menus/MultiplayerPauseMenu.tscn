@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://bybi44wiigdhp"]
 
-[ext_resource type="PackedScene" uid="uid://dkie3md1cmsip" path="res://COGITO/EasyMenus/Scenes/PauseMenu.tscn" id="1_7wtvd"]
-[ext_resource type="Script" path="res://COGITO/Theme/CogitoUiButton.gd" id="2_atnxx"]
+[ext_resource type="PackedScene" uid="uid://dkie3md1cmsip" path="res://addons/cogito/EasyMenus/Scenes/PauseMenu.tscn" id="1_7wtvd"]
+[ext_resource type="Script" path="res://addons/cogito/Theme/CogitoUiButton.gd" id="2_atnxx"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/multiplayer_pause_menu_controller.gd" id="2_saq0q"]
 [ext_resource type="PackedScene" uid="uid://r2ue7e8rdhlc" path="res://COGITO/SteamP2PCoop/Menus/MultiplayerTabMenu.tscn" id="4_ktan5"]
 

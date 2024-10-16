@@ -1,19 +1,19 @@
 [gd_scene load_steps=11 format=3 uid="uid://cdw763d6olrcm"]
 
-[ext_resource type="PackedScene" uid="uid://kicjwmh02uwf" path="res://COGITO/PackedScenes/cogito_player.tscn" id="1_kpc5f"]
+[ext_resource type="PackedScene" uid="uid://kicjwmh02uwf" path="res://addons/cogito/PackedScenes/cogito_player.tscn" id="1_kpc5f"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/multiplayer_player.gd" id="2_0gpnc"]
-[ext_resource type="Script" path="res://COGITO/InventoryPD/cogito_inventory.gd" id="3_5d5aw"]
+[ext_resource type="Script" path="res://addons/cogito/InventoryPD/cogito_inventory.gd" id="3_5d5aw"]
 [ext_resource type="PackedScene" uid="uid://bybi44wiigdhp" path="res://COGITO/SteamP2PCoop/Menus/MultiplayerPauseMenu.tscn" id="4_7hgxx"]
-[ext_resource type="Material" uid="uid://c4rvflucftsrl" path="res://COGITO/DynamicFootstepSystem/Assets/Materials/Example_Wood.tres" id="4_d2a6w"]
-[ext_resource type="Material" uid="uid://dkbgl3p3ffd1" path="res://COGITO/Assets/Materials/Prototype_DarkGrey.tres" id="5_5o2oq"]
+[ext_resource type="Material" uid="uid://c4rvflucftsrl" path="res://addons/cogito/DynamicFootstepSystem/Assets/Materials/Example_Wood.tres" id="4_d2a6w"]
+[ext_resource type="Material" uid="uid://dkbgl3p3ffd1" path="res://addons/cogito/Assets/Materials/Prototype_DarkGrey.tres" id="5_5o2oq"]
 
 [sub_resource type="Resource" id="Resource_k2flf"]
 resource_local_to_scene = true
 script = ExtResource("3_5d5aw")
 grid = true
-starter_inventory = Array[Resource("res://COGITO/InventoryPD/CustomResources/InventorySlotPD.gd")]([])
+starter_inventory = Array[Resource("res://addons/cogito/InventoryPD/CustomResources/InventorySlotPD.gd")]([])
 inventory_size = Vector2i(5, 3)
-inventory_slots = Array[Resource("res://COGITO/InventoryPD/CustomResources/InventorySlotPD.gd")]([null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
+inventory_slots = Array[Resource("res://addons/cogito/InventoryPD/CustomResources/InventorySlotPD.gd")]([null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_vlq2o"]
 material = ExtResource("4_d2a6w")

@@ -1,9 +1,9 @@
 [gd_scene load_steps=7 format=3 uid="uid://r2ue7e8rdhlc"]
 
-[ext_resource type="FontFile" uid="uid://bfavdpnmorag5" path="res://COGITO/Assets/Fonts/Montserrat/Montserrat-Regular.ttf" id="1_qpuqo"]
+[ext_resource type="FontFile" uid="uid://bfavdpnmorag5" path="res://addons/cogito/Assets/Fonts/Montserrat/Montserrat-Regular.ttf" id="1_qpuqo"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/multiplayer_tab_menu.gd" id="2_r85pm"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/steam_p2p_connection_manager.gd" id="3_hlkti"]
-[ext_resource type="Script" path="res://COGITO/EasyMenus/Scripts/follow_focus_center.gd" id="3_m8cii"]
+[ext_resource type="Script" path="res://addons/cogito/EasyMenus/Scripts/follow_focus_center.gd" id="3_m8cii"]
 [ext_resource type="Texture2D" uid="uid://ctlfxilur7bll" path="res://COGITO/SteamP2PCoop/Assets/Hint_Online.png" id="4_w1wy8"]
 [ext_resource type="Script" path="res://COGITO/SteamP2PCoop/lan_p2p_connection_manager.gd" id="5_qo218"]
 
