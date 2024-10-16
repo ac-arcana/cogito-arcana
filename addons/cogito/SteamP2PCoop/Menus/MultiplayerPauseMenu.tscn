@@ -2,8 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://dkie3md1cmsip" path="res://addons/cogito/EasyMenus/Scenes/PauseMenu.tscn" id="1_7wtvd"]
 [ext_resource type="Script" path="res://addons/cogito/Theme/CogitoUiButton.gd" id="2_atnxx"]
-[ext_resource type="Script" path="res://COGITO/SteamP2PCoop/multiplayer_pause_menu_controller.gd" id="2_saq0q"]
-[ext_resource type="PackedScene" uid="uid://r2ue7e8rdhlc" path="res://COGITO/SteamP2PCoop/Menus/MultiplayerTabMenu.tscn" id="4_ktan5"]
+[ext_resource type="Script" path="res://addons/cogito/SteamP2PCoop/multiplayer_pause_menu_controller.gd" id="2_saq0q"]
+[ext_resource type="PackedScene" uid="uid://r2ue7e8rdhlc" path="res://addons/cogito/SteamP2PCoop/Menus/MultiplayerTabMenu.tscn" id="4_ktan5"]
 
 [node name="MultiplayerPauseMenu" node_paths=PackedStringArray("multiplayer_tab_menu") instance=ExtResource("1_7wtvd")]
 script = ExtResource("2_saq0q")

@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://ddok8xcy7t45y"]
+
+[ext_resource type="PackedScene" uid="uid://dq6tvhqcy2aps" path="res://addons/cogito/EasyMenus/Scenes/main_menu.tscn" id="1_v5rca"]
+
+[node name="MultiplayerMainMenu" instance=ExtResource("1_v5rca")]
+
+[node name="OptionsTabMenu" parent="ContentMain" index="4" node_paths=PackedStringArray("nodes_to_focus")]
+nodes_to_focus = [NodePath("Gameplay/ScrollContainer/VBoxContainer/InvertYAxisCheckButton"), NodePath("Graphics/ScrollContainer/VBoxContainer/HBoxContainer_WindowMode/WindowModeOptionButton"), NodePath("Audio/ScrollContainer/VBoxContainer/MarginContainer/VBoxContainer/SFXVolumeSlider"), null]
+
+[node name="MainMenu_SaveSlotManager" parent="." index="1"]
+start_game_scene = "res://addons/cogito/SteamP2PCoop/DemoScenes/COGITO_Steam_P2P_Coop_01_Demo.tscn"
