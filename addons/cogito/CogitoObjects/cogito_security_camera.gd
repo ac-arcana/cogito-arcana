@@ -1,4 +1,4 @@
-@icon("res://addons/cogito/Graphics/Editor/Icon_CogitoObject.svg")
+@icon("res://addons/cogito/Assets/Graphics/Editor/Icon_CogitoObject.svg")
 extends Node3D
 class_name CogitoSecurityCamera
 
@@ -192,7 +192,7 @@ func is_relevant_non_player(body: Node3D) -> bool:
 	if body.name in non_player_detection_list:
 		return true
 	else:
-		print("SecurityCamera: Non-relevant object ignored:", body.name)
+		#print("SecurityCamera: Non-relevant object ignored:", body.name)
 		return false
 
 

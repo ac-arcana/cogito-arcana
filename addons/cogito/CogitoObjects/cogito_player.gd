@@ -326,7 +326,9 @@ func _on_death():
 func _on_pause_movement():
 	if !is_movement_paused:
 		is_movement_paused = true
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		# Only show mouse cursor if input device is KBM
+		if InputHelper.device_index == -1:
+			Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 
 func _on_resume_movement():
@@ -379,7 +381,6 @@ func _input(event):
 			head.rotation.x = clamp(head.rotation.x, deg_to_rad(-90), deg_to_rad(90))
 			
 		mouse_movement.emit(look_movement)
-		print("CogPlayer: mouse_movement relative= ", look_movement)
 
 		
 	# Checking Analog stick input for mouse look

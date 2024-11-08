@@ -75,7 +75,9 @@ func open_pause_menu():
 
 func open_options_menu():
 	options_tab_menu.show()
-	options_tab_menu.nodes_to_focus[0].grab_focus.call_deferred()
+	options_tab_menu.load_options(true)
+	options_tab_menu.have_options_changed = false
+	options_tab_menu.tab_container.nodes_to_focus[0].grab_focus.call_deferred()
 	game_menu.hide()
 
 
@@ -152,7 +154,7 @@ func _on_save_button_pressed() -> void:
 
 
 func _on_load_button_pressed() -> void:
-	print("LOAD BUTTON PRESSED")
+	CogitoMain.debug_log(true,"pause_menu_controller.gd","LOAD button pressed.")
 	CogitoSceneManager._current_scene_name = get_tree().get_current_scene().get_name()
 	CogitoSceneManager._current_scene_path = get_tree().current_scene.scene_file_path
 	CogitoSceneManager.delete_temp_saves()
