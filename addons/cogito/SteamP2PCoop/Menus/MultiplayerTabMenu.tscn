@@ -13,6 +13,7 @@ offset_right = 500.0
 offset_bottom = 500.0
 size_flags_horizontal = 4
 theme_override_fonts/font = ExtResource("1_qpuqo")
+current_tab = 0
 script = ExtResource("2_r85pm")
 steam_p2p_connection_menu = NodePath("Steam")
 nodes_to_focus = [NodePath("Steam/ScrollContainer/VBoxContainer/HostSteamButton"), NodePath("LAN/ScrollContainer/VBoxContainer/HostLanButton")]
@@ -26,6 +27,7 @@ theme_override_constants/margin_bottom = 25
 script = ExtResource("3_hlkti")
 multiplayer_hint_icon = ExtResource("4_w1wy8")
 lobbies_container = NodePath("ScrollContainer/VBoxContainer/LobbiesVBoxContainer")
+metadata/_tab_index = 0
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Steam"]
 custom_minimum_size = Vector2(450, 0)
@@ -79,6 +81,7 @@ theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 25
 script = ExtResource("5_qo218")
 multiplayer_hint_icon = ExtResource("4_w1wy8")
+metadata/_tab_index = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="LAN"]
 custom_minimum_size = Vector2(450, 0)

@@ -107,4 +107,3 @@ func _on_lobby_name_text_submitted(new_text):
 
 func _on_max_players_spin_box_value_changed(value):
 	lobby_max_players = int(value)
-
