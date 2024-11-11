@@ -28,6 +28,6 @@ func _input(event):
 	if just_opened:
 		just_opened = false
 	else:
-		if (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause")) and not game_menu.visible:
+		if (event.is_action_pressed("ui_cancel") or event.is_action_pressed("menu")) and not game_menu.visible:
 			multiplayer_tab_menu.hide()
 		super(event)
