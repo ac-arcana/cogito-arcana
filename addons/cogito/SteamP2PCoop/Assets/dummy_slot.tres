@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="InventorySlotPD" load_steps=2 format=3 uid="uid://ce2mtxw82rnbb"]
+
+[ext_resource type="Script" path="res://addons/cogito/InventoryPD/CustomResources/InventorySlotPD.gd" id="1_pdjqo"]
+
+[resource]
+script = ExtResource("1_pdjqo")
+quantity = 1
+origin_index = -1

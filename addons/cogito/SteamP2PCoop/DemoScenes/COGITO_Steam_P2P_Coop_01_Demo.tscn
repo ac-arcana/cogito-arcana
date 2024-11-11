@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://catupiy4a6myb"]
+[gd_scene load_steps=14 format=3 uid="uid://catupiy4a6myb"]
 
 [ext_resource type="Script" path="res://addons/cogito/SteamP2PCoop/steam_p2p_manager.gd" id="1_h6p3p"]
 [ext_resource type="Script" path="res://addons/cogito/SteamP2PCoop/multiplayer_level_spawner.gd" id="3_nst55"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://addons/cogito/SteamP2PCoop/Synchronizers/cogito_pickup_synchronizer.gd" id="10_m1xp7"]
 [ext_resource type="Script" path="res://addons/cogito/SteamP2PCoop/Synchronizers/cogito_vehicle_synchronizer.gd" id="11_6tjh7"]
 [ext_resource type="Script" path="res://addons/cogito/SteamP2PCoop/Synchronizers/cogito_drop_synchronizer.gd" id="11_qp3b5"]
+[ext_resource type="Resource" uid="uid://ce2mtxw82rnbb" path="res://addons/cogito/SteamP2PCoop/Assets/dummy_slot.tres" id="12_wjncp"]
 
 [node name="SteamP2PCoopDemo" type="Node3D"]
 
@@ -50,6 +51,7 @@ level_spawner = NodePath("../../MultiplayerLevelSpawner")
 
 [node name="CogitoDropSynchronizer" type="Node" parent="CogitoSynchronizers"]
 script = ExtResource("11_qp3b5")
+dummy_slot = ExtResource("12_wjncp")
 
 [node name="CogitoVehicleSynchronizer" type="Node" parent="CogitoSynchronizers" node_paths=PackedStringArray("level_spawner")]
 script = ExtResource("11_6tjh7")
