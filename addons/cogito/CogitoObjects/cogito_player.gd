@@ -222,7 +222,7 @@ func _ready():
 	# Grabs all attached player attributes
 	for attribute in find_children("","CogitoAttribute",false):
 		player_attributes[attribute.attribute_name] = attribute
-		CogitoMain.debug_log(is_logging, "cogito_player.gd", "Cogito Attribute found: " + attribute.attribute_name)
+		CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Cogito Attribute found: " + attribute.attribute_name)
 
 	# If found, hookup health attribute signal to detect player death
 	var health_attribute = player_attributes.get("health")
@@ -242,7 +242,7 @@ func _ready():
 	### CURRENCY SETUP
 	for currency in find_children("", "CogitoCurrency", false):
 		player_currencies[currency.currency_name] = currency
-		CogitoMain.debug_log(is_logging, "cogito_player.gd", "Cogito Currency found: " + currency.currency_name)
+		CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Cogito Currency found: " + currency.currency_name)
 
 
 	# Pause Menu setup
@@ -251,16 +251,14 @@ func _ready():
 		pause_menu_node.resume.connect(_on_pause_menu_resume) # Hookup resume signal from Pause Menu
 		pause_menu_node.close_pause_menu() # Making sure pause menu is closed on player scene load
 	else:
-
-		print("Player has no reference to pause menu.")
+		printerr("Player has no reference to pause menu.")
 	
 	#Sittable Signals setup
 	CogitoSceneManager.connect("sit_requested", Callable(self, "_on_sit_requested"))
 	CogitoSceneManager.connect("stand_requested", Callable(self, "_on_stand_requested"))
 	CogitoSceneManager.connect("seat_move_requested", Callable(self, "_on_seat_move_requested"))
 	
-	CogitoMain.debug_log(is_logging, "cogito_player.gd", "Player has no reference to pause menu.")
-
+	CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Player has no reference to pause menu.")
 
 	call_deferred("slide_audio_init")
 
@@ -275,7 +273,7 @@ func slide_audio_init():
 func increase_attribute(attribute_name: String, value: float, value_type: ConsumableItemPD.ValueType) -> bool:
 	var attribute = player_attributes.get(attribute_name)
 	if not attribute:
-		CogitoMain.debug_log(is_logging, "cogito_player.gd", "Increase attribute: Attribute not found")
+		CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Increase attribute: Attribute not found")
 		return false
 	if value_type == ConsumableItemPD.ValueType.CURRENT:
 		if attribute.value_current == attribute.value_max:
@@ -292,7 +290,7 @@ func increase_attribute(attribute_name: String, value: float, value_type: Consum
 func decrease_attribute(attribute_name: String, value: float):
 	var attribute = player_attributes.get(attribute_name)
 	if not attribute:
-		CogitoMain.debug_log(is_logging, "cogito_player.gd", "Decrease attribute: " + attribute_name + " - Attribute not found")
+		CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Decrease attribute: " + attribute_name + " - Attribute not found")
 		return
 	attribute.subtract(value)
 
@@ -301,7 +299,7 @@ func decrease_attribute(attribute_name: String, value: float):
 func increase_currency(currency_name: String, value: float) -> bool:
 	var currency = player_currencies.get(currency_name)
 	if not currency:
-		CogitoMain.debug_log(is_logging, "cogito_player.gd", "Increase currency: Currency not found")
+		CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Increase currency: Currency not found")
 		return false
 	else:
 		currency.add(value)
@@ -311,7 +309,7 @@ func increase_currency(currency_name: String, value: float) -> bool:
 func decrease_currency(currency_name: String, value: float):
 	var currency = player_currencies.get(currency_name)
 	if not currency:
-		CogitoMain.debug_log(is_logging, "cogito_player.gd", "Decrease currency: " + currency_name + " - Currency not found")
+		CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Decrease currency: " + currency_name + " - Currency not found")
 		return
 	currency.subtract(value)
 
@@ -341,7 +339,7 @@ func _on_resume_movement():
 func _reload_options():
 	var err = config.load(OptionsConstants.config_file_name)
 	if err == 0:
-		CogitoMain.debug_log(is_logging, "cogito_player.gd", "Options reloaded.")
+		CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Options reloaded.")
 		
 		HEADBOBBLE = config.get_value(OptionsConstants.section_name, OptionsConstants.head_bobble_key, 1)
 		MOUSE_SENS = config.get_value(OptionsConstants.section_name, OptionsConstants.mouse_sens_key, 0.25)
@@ -616,18 +614,15 @@ func _move_to_nearby_location(sittable):
 			randf_range(-0.1, 0.1),  # Degree of Y random actually makes this work better at finding candidates
 			randf_range(-0.1, 0.1)
 		).normalized()
-		#print(random_direction)
 		
 		var candidate_pos = seat_position + (random_direction * exit_distance)
 		candidate_pos.y = navmesh_offset_y  # to check navmesh at navmesh height
 
 		navigation_agent.target_position = candidate_pos
-		#print("Checking position: ", candidate_pos)
 
 		# Check if position is reachable
 		if navigation_agent.is_navigation_finished():
 			currently_tweening = true
-			#print("Found available location, moving there.", candidate_pos, attempts)
 			var tween = create_tween()
 			navigation_agent.target_position.y += 1 # To avoid player going through floor
 			tween.tween_property(self, "global_transform:origin", navigation_agent.target_position, sittable.tween_duration)
@@ -635,12 +630,10 @@ func _move_to_nearby_location(sittable):
 			tween.tween_callback(Callable(self, "_stand_up_finished"))
 			return
 		else:
-			#print("Position ", candidate_pos, " is not valid.")
 			exit_distance += step_increase
 			attempts += 1
 
 		if exit_distance > max_distance:
-			#print("Exceeded maximum exit distance. Distance has been reset")
 			exit_distance = 1
 
 	# If no valid location found, try leave node
@@ -780,7 +773,8 @@ func _process_on_sittable(delta):
 		if angle_to_up > sittable.eject_angle:
 			is_ejected = true  # Set the flag to avoid repeated ejections
 			CogitoSceneManager._current_sittable_node.interact(player_interaction_component) #Interact with sittable to reset state and eject
-	
+
+
 func _physics_process(delta):
 	#if is_movement_paused:
 		#return
@@ -833,7 +827,7 @@ func _physics_process(delta):
 	
 	if stand_after_roll:
 		if !is_movement_paused or !is_showing_ui:
-			CogitoMain.debug_log(is_logging, "cogito_player.gd", "523: Standing after roll.")
+			CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "523: Standing after roll.")
 			head.position.y = lerp(head.position.y, 0.0, delta * LERP_SPEED)
 			standing_collision_shape.disabled = true
 			crouching_collision_shape.disabled = false
@@ -878,7 +872,7 @@ func _physics_process(delta):
 		is_crouching = true
 	else:
 		if !is_showing_ui or !is_movement_paused:
-			#CogitoMain.debug_log(is_logging, "cogito_player.gd", "567: Standing up...")
+			#CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "567: Standing up...")
 			head.position.y = lerp(head.position.y, 0.0, delta * LERP_SPEED)
 			if head.position.y < CROUCHING_DEPTH/4:
 				# still transitioning from state
@@ -919,7 +913,7 @@ func _physics_process(delta):
 		else:
 			# STANDING UP HANDLING
 			if !is_showing_ui or !is_movement_paused:
-				CogitoMain.debug_log(is_logging, "cogito_player.gd", "606 standing up...")
+				CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "606 standing up...")
 				current_speed = lerp(current_speed, WALKING_SPEED, delta * LERP_SPEED)
 				wiggle_current_intensity = WIGGLE_ON_WALKING_INTENSITY * HEADBOBBLE
 				wiggle_index += WIGGLE_ON_WALKING_SPEED * delta
@@ -982,7 +976,7 @@ func _physics_process(delta):
 		)
 	else:
 		if !is_movement_paused or !is_showing_ui:
-			#CogitoMain.debug_log(is_logging, "cogito_player.gd", "668 Standing up...")
+			#CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "668 Standing up...")
 			eyes.position.y = lerp(eyes.position.y, 0.0, delta * LERP_SPEED)
 			eyes.position.x = lerp(eyes.position.x, 0.0, delta * LERP_SPEED)
 			if last_velocity.y <= -7.5:
@@ -1042,7 +1036,7 @@ func _physics_process(delta):
 				standing_collision_shape.disabled = false
 				crouching_collision_shape.disabled = true
 		elif not doesnt_need_stamina:
-			CogitoMain.debug_log(is_logging, "cogito_player.gd","Not enough stamina to jump.")
+			CogitoGlobals.debug_log(is_logging, "cogito_player.gd","Not enough stamina to jump.")
 
 	if sliding_timer.is_stopped():
 		if is_on_floor():
@@ -1185,7 +1179,7 @@ func step_check(delta: float, is_jumping_: bool, step_result: StepResult):
 					if test_motion_result.get_collision_normal().angle_to(Vector3.UP) <= deg_to_rad(STEP_MAX_SLOPE_DEGREE):
 						is_step = true
 						step_result.is_step_up = true
-						step_result.diff_position = -test_motion_result.get_remainder()
+						step_result.diff_position.y = -test_motion_result.get_remainder().y
 						step_result.normal = test_motion_result.get_collision_normal()
 						break
 			else:
@@ -1209,7 +1203,7 @@ func step_check(delta: float, is_jumping_: bool, step_result: StepResult):
 						if test_motion_result.get_collision_normal().angle_to(Vector3.UP) <= deg_to_rad(STEP_MAX_SLOPE_DEGREE):
 							is_step = true
 							step_result.is_step_up = true
-							step_result.diff_position = -test_motion_result.get_remainder()
+							step_result.diff_position.y = -test_motion_result.get_remainder().y
 							step_result.normal = test_motion_result.get_collision_normal()
 							break
 
@@ -1236,7 +1230,7 @@ func step_check(delta: float, is_jumping_: bool, step_result: StepResult):
 			if is_player_collided and test_motion_result.get_travel().y < -STEP_DOWN_MARGIN:
 				if test_motion_result.get_collision_normal().angle_to(Vector3.UP) <= deg_to_rad(STEP_MAX_SLOPE_DEGREE):
 					is_step = true
-					step_result.diff_position = test_motion_result.get_travel()
+					step_result.diff_position.y = test_motion_result.get_travel().y
 					step_result.normal = test_motion_result.get_collision_normal()
 		elif is_zero_approx(test_motion_result.get_collision_normal().y):
 			var wall_collision_normal: Vector3 = test_motion_result.get_collision_normal()
@@ -1258,7 +1252,7 @@ func step_check(delta: float, is_jumping_: bool, step_result: StepResult):
 				if is_player_collided and test_motion_result.get_travel().y < -STEP_DOWN_MARGIN:
 					if test_motion_result.get_collision_normal().angle_to(Vector3.UP) <= deg_to_rad(STEP_MAX_SLOPE_DEGREE):
 						is_step = true
-						step_result.diff_position = test_motion_result.get_travel()
+						step_result.diff_position.y = test_motion_result.get_travel().y
 						step_result.normal = test_motion_result.get_collision_normal()
 
 	return is_step
@@ -1274,7 +1268,7 @@ func _on_animation_player_animation_finished(anim_name):
 
 func apply_external_force(force_vector: Vector3):
 	if force_vector and force_vector.length() > 0:
-		CogitoMain.debug_log(is_logging, "cogito_player.gd", "Applying external force " + str(force_vector))
+		CogitoGlobals.debug_log(is_logging, "cogito_player.gd", "Applying external force " + str(force_vector))
 		velocity += force_vector
 		move_and_slide()
 

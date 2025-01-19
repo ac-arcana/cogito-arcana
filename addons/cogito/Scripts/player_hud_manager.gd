@@ -27,6 +27,9 @@ signal hide_inventory
 @export var ui_attribute_prefab : PackedScene
 ## Reference to PackedScene that gets instantiated for each player currency.
 @export var ui_currency_prefab : PackedScene
+## If you want to have the stamina bar outside of the other attributes, you can set a reference here. This will remove it from the main attribute container
+@export var fixed_stamina_bar : CogitoAttributeUi
+
 
 var hurt_tween : Tween
 var is_inventory_open : bool = false
@@ -38,7 +41,7 @@ var interaction_texture : Texture2D
 @onready var wieldable_hud: PanelContainer = $MarginContainer_BottomUI/WieldableHud # Displays wieldable icons and data. Hides when no wieldable equipped.
 @onready var prompt_area: Control = $PromptArea
 @onready var hint_area: Control = $HintArea
-@onready var ui_attribute_area : VBoxContainer = $MarginContainer_BottomUI/PlayerAttributes/MarginContainer/VBoxContainer
+@onready var ui_attribute_area : BoxContainer = $MarginContainer_BottomUI/PlayerAttributes/MarginContainer/VBoxContainer
 @onready var ui_currency_area: VBoxContainer = $InventoryInterface/VBoxContainer/PlayerCurrencies/MarginContainer/VBoxContainer
 @onready var crosshair: Control = $Crosshair
 
@@ -46,6 +49,9 @@ var interaction_texture : Texture2D
 
 
 func _ready():
+	# TESTING THIS
+	set_process_unhandled_input(false)
+	
 	# Connect to signal that detects change of input device
 	InputHelper.device_changed.connect(_on_input_device_change)
 	# Calling this function once to set proper input icons
@@ -97,13 +103,16 @@ func instantiate_player_attribute_ui():
 		n.queue_free()
 		
 	for attribute in player.player_attributes.values():
-		var spawned_attribute_ui = ui_attribute_prefab.instantiate()
-		ui_attribute_area.add_child(spawned_attribute_ui)
-		if attribute.attribute_name == "health":
-			attribute.damage_taken.connect(_on_player_damage_taken)
-			attribute.death.connect(_on_player_death)
-		
-		spawned_attribute_ui.initiate_attribute_ui(attribute)
+		if fixed_stamina_bar and attribute.attribute_name == "stamina":
+			fixed_stamina_bar.initiate_attribute_ui(attribute)
+		else:
+			var spawned_attribute_ui = ui_attribute_prefab.instantiate()
+			ui_attribute_area.add_child(spawned_attribute_ui)
+			if attribute.attribute_name == "health":
+				attribute.damage_taken.connect(_on_player_damage_taken)
+				attribute.death.connect(_on_player_death)
+			
+			spawned_attribute_ui.initiate_attribute_ui(attribute)
 
 
 func instantiate_player_currency_ui():
@@ -119,7 +128,7 @@ func instantiate_player_currency_ui():
 
 func connect_to_external_inventories(): # Grabbing external inventories in scene.
 	for node in get_tree().get_nodes_in_group("external_inventory"):
-		print("Is in external_inventory group: ", node)
+		CogitoGlobals.debug_log(true, "player_hud_manager", node.name + " is in external_inventory group.")
 		if !node.is_connected("toggle_inventory",toggle_inventory_interface):
 			node.toggle_inventory.connect(toggle_inventory_interface)
 
@@ -185,6 +194,12 @@ func set_drop_prompt(_carrying_node):
 	var instanced_prompt: UiPromptComponent = prompt_component.instantiate()
 	prompt_area.add_child(instanced_prompt)
 	instanced_prompt.set_prompt("Drop", _carrying_node.input_map_action)
+	
+	# Create the rotation input prompt
+	if _carrying_node.enable_manual_rotating:
+		var instanced_secondary_prompt: UiPromptComponent = prompt_component.instantiate()
+		prompt_area.add_child(instanced_secondary_prompt)
+		instanced_secondary_prompt.set_prompt("Rotate", "action_secondary")
 
 
 #What happens when an external UI is shown (like inventory, readbale document, keypad, external inventory)
@@ -206,11 +221,6 @@ func _on_set_use_prompt(_passed_use_text):
 	print("Player HUD manager: _on_set_use_prompt called")
 	# DEPRECATED: Showing these prompts felt increasingly useless.
 	pass
-	#primary_use_label.text = passed_use_text
-	#if passed_use_text != "":
-		#primary_use_icon.show()
-	#else:
-		#primary_use_icon.hide()
 
 
 # Updating HUD wieldable data, used for stuff like flashlight battery charge, ammo display, etc

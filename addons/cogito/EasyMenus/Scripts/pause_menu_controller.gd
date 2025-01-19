@@ -63,8 +63,6 @@ func open_pause_menu():
 	#Stops game and shows pause menu
 	get_tree().paused = true
 	label_active_slot.text = "Current Slot: " + CogitoSceneManager._active_slot
-	#save_button.text = "Save Slot " + CogitoSceneManager._active_slot
-	#load_button.text = "Load Slot " + CogitoSceneManager._active_slot
 	temp_screenshot = grab_temp_screenshot()
 	show()
 	game_menu.show()
@@ -100,11 +98,13 @@ func load_current_slot_data():
 	var savetime : int
 	if CogitoSceneManager._player_state:
 		savetime = CogitoSceneManager._player_state.player_state_savetime
-	if savetime == null or typeof(savetime) != TYPE_INT:
+	if savetime == null or typeof(savetime) != TYPE_INT or savetime == 0:
 		%Label_SaveTime.text = ""
 	else:
 		var timeoffset = Time.get_time_zone_from_system().bias*60
-		%Label_SaveTime.text = Time.get_datetime_string_from_unix_time(savetime+timeoffset,true)
+		var save_time_string = Time.get_datetime_string_from_unix_time(savetime+timeoffset,true)
+		
+		%Label_SaveTime.text = save_time_string
 
 
 func close_pause_menu():
@@ -154,7 +154,7 @@ func _on_save_button_pressed() -> void:
 
 
 func _on_load_button_pressed() -> void:
-	CogitoMain.debug_log(true,"pause_menu_controller.gd","LOAD button pressed.")
+	CogitoGlobals.debug_log(true,"pause_menu_controller.gd","LOAD button pressed.")
 	CogitoSceneManager._current_scene_name = get_tree().get_current_scene().get_name()
 	CogitoSceneManager._current_scene_path = get_tree().current_scene.scene_file_path
 	CogitoSceneManager.delete_temp_saves()

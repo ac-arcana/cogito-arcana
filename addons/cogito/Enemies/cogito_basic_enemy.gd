@@ -81,6 +81,16 @@ var can_play_footstep: bool = true
 var wiggle_vector : Vector2 = Vector2.ZERO
 var wiggle_index : float = 0.0
 
+var knockback_force: Vector3 = Vector3.ZERO
+var knockback_timer: float = 0.0
+@export var knockback_duration: float = 0.5
+@export var knockback_strength: float = 10.0
+
+
+func apply_knockback(direction: Vector3):
+	knockback_force = direction.normalized() * knockback_strength
+	knockback_timer = knockback_duration
+
 
 func _enter_tree() -> void:
 	current_state = EnemyState.IDLE
@@ -102,7 +112,14 @@ func find_cogito_properties():
 func _physics_process(delta: float) -> void:
 	if attack_cooldown > 0:
 		attack_cooldown -= delta
-	
+		
+	if knockback_timer > 0:
+		knockback_timer -= delta
+		velocity = knockback_force
+		knockback_force = lerp(knockback_force, Vector3.ZERO, delta * 5)
+		move_and_slide()
+		return
+		
 	match current_state:
 		EnemyState.PATROLLING:
 			handle_patrolling(delta)
@@ -136,13 +153,13 @@ func handle_chasing(_delta: float):
 
 func handle_patrolling(_delta: float):
 	if !patrol_path:
-		print("Cogito_basic_enemy: No patrol path found. Switching to idle.")
+		CogitoGlobals.debug_log(true,"cogito_basic_enemy.gd","No patrol path found. Switching to idle.")
 		switch_to_idle()
 		return
 	
 	if !is_waiting:
 		if patrol_path.patrol_points.size() <= 0:
-			print("Cogito_basic_enemy: Patrol points array is empty. Switching to idle.")
+			CogitoGlobals.debug_log(true,"cogito_basic_enemy.gd","Patrol points array is empty. Switching to idle.")
 			switch_to_idle()
 			return
 		if global_position.distance_to(patrol_path.patrol_points[patrol_point_index].global_position) < patrol_point_threshold:
@@ -187,14 +204,14 @@ func _target_in_range() -> bool:
 
 func attack(target: Node3D):
 	attack_cooldown = attack_interval
-	print("Enemy attacks!")
+	CogitoGlobals.debug_log(true,"cogito_basic_enemy.gd","Enemy attacks!")
 	var dir = global_position.direction_to(target.global_position)
 	if attack_sound:
 		Audio.play_sound_3d(attack_sound).global_position = self.global_position
 	
 	if target is CogitoPlayer:
 		target.apply_external_force(dir * attack_stagger)
-		print("Enemy attack: Applying vector ", dir * attack_stagger, " to target. Target.main_velocity = ", target.main_velocity)
+		CogitoGlobals.debug_log(true,"cogito_basic_enemy.gd","Enemy attack: Applying vector " + str(dir * attack_stagger) + " to target. Target.main_velocity = " + str(target.main_velocity) )
 		target.decrease_attribute("health", attack_damage)
 
 
@@ -216,7 +233,6 @@ func switch_to_chasing():
 
 # Future method to set object state when a scene state file is loaded.
 func set_state():
-	print("Cogito_basic_enemy.gd: set_state()")
 	#TODO: Find a way to possibly save health of health attribute.
 	find_cogito_properties()
 	load_patrol_points()
@@ -262,7 +278,7 @@ func _on_interaction_raycast_interactable_seen(interactable):
 		
 func interact_with_door(door: CogitoDoor):
 	if door.is_locked:
-		print("Door is locked.")
+		CogitoGlobals.debug_log(true,"cogito_basic_enemy.gd","Door is locked.")
 		#TODO on NPC inventory addition, add key check here	
 		door.audio_stream_player_3d.stream = door.rattle_sound
 		door.audio_stream_player_3d.play()
@@ -275,7 +291,7 @@ func interact_with_door(door: CogitoDoor):
 
 func load_patrol_points():
 	if patrol_path_nodepath:
-		print("Cogito_basic_enemy.gd: Loading patrol path: ", patrol_path_nodepath)
+		CogitoGlobals.debug_log(true,"cogito_basic_enemy.gd","Loading patrol path: " + str(patrol_path_nodepath))
 		patrol_path = get_node(patrol_path_nodepath)
 
 

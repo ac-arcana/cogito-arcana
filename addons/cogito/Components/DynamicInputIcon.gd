@@ -33,6 +33,9 @@ var device_index
 func _ready():
 	InputHelper.device_changed.connect(update_device)
 	update_device(InputHelper.device,InputHelper.device_index)
+	
+	InputHelper.keyboard_input_changed.connect(check_for_input_change)
+	InputHelper.joypad_input_changed.connect(check_for_input_change)
 
 
 func update_device(_device, _device_index):
@@ -42,9 +45,13 @@ func update_device(_device, _device_index):
 	if _is_steam_deck():
 		device = "steam_deck"
 	
+	update_input_icon.call_deferred() #Calling this deferred as there's been Input Icons that exist before the cfg is loaded.
+	
+	
+func update_input_icon():
 	match input_icon_type:
 		InputIconType.DYNAMIC:
-			update_input_icon()
+			update_input_icon_dynamic()
 		InputIconType.DYNAMIC_GAMEPAD:
 			update_gamepad_icon()
 		InputIconType.KBM:
@@ -57,7 +64,12 @@ func update_device(_device, _device_index):
 			update_gamepad_icon(switch_icons)
 
 
-func update_input_icon():
+func check_for_input_change(_action, _input):
+	if _action == action_name:
+		update_input_icon()
+
+
+func update_input_icon_dynamic():
 	match device:
 		"steam_deck":
 			update_gamepad_icon(steam_deck_icons)
@@ -88,44 +100,19 @@ func update_icon_kbm(): # Sets the bound action to keyboard and mouse icon
 	
 	var keyboard_input = InputHelper.get_keyboard_input_for_action(action_name)
 	if keyboard_input is InputEventKey:
-		frame = keycode_to_frame_index(OS.get_keycode_string(keyboard_input.get_physical_keycode()))
+		frame = keycode_to_frame_index(OS.get_keycode_string(keyboard_input.keycode))
 	elif keyboard_input is InputEventMouseButton:
-		if keyboard_input.get_button_index() == 2:
+		if keyboard_input.get_button_index() == MOUSE_BUTTON_RIGHT:
 			frame = keycode_to_frame_index("Mouse Right")
-		if keyboard_input.get_button_index() == 1:
+		if keyboard_input.get_button_index() == MOUSE_BUTTON_LEFT:
 			frame = keycode_to_frame_index("Mouse Left")
-		if keyboard_input.get_button_index() == 3:
+		if keyboard_input.get_button_index() == MOUSE_BUTTON_MIDDLE:
 			frame = keycode_to_frame_index("Mouse Middle")
 		
 	else:
-		print("DynamicInputIcon: Action=", action_name, ". No primary keyboard/mouse input map assigned.")
+		CogitoGlobals.debug_log(true, "DynamicInputIcon.gd", "Action " + action_name + ": No primary keyboard/mouse input map assigned.")
 		frame = 0
 		return
-
-
-func update_icon_generic_gamepad():
-	hframes = 10
-	vframes = 10
-	set_texture(gamepad_icons)
-	
-	var joypad_input = InputHelper.get_joypad_input_for_action(action_name)
-	if joypad_input is InputEventJoypadButton:
-		#print("DynamicInputIcon: Action=", action_name, ". Joypad btn=", joypad_input.button_index)
-		set_texture(gamepad_icons)
-		frame = joypad_input.button_index
-		
-	elif joypad_input is InputEventJoypadMotion:
-		#print("DynamicInputIcon: Action=", action_name, ". Joypad motion=", joypad_motion.axis)
-		set_texture(gamepad_icons)
-		if joypad_input.axis == 0 or joypad_input.axis == 1:
-			frame = 8
-		if joypad_input.axis == 2 or joypad_input.axis == 3:
-			frame = 9
-		
-		if joypad_input.axis == 5:
-			frame = 18 #Sets icon to RT
-		if joypad_input.axis == 4:
-			frame = 17 #Sets icon to LT
 
 
 func _is_steam_deck() -> bool:
@@ -143,17 +130,29 @@ func _is_steam_deck() -> bool:
 func gamepad_motion_to_frame_index(joypad_input_motion: InputEventJoypadMotion):
 	match joypad_input_motion.axis:
 		0: # LEFT STICK H AXIS
-			return 41
+			if joypad_input_motion.axis_value > 0: # LEFT STICK RIGHT
+				return 38
+			else: # LEFT STICK LEFT
+				return 37
 		1: # LEFT STICK V AXIS
-			return 42
+			if joypad_input_motion.axis_value < 0: # LEFT STICK UP
+				return 39
+			else: # LEFT STICK DOWN
+				return 40
 		2: # RIGHT STICK H AXIS
-			return 53
+			if joypad_input_motion.axis_value > 0: # RIGHT STICK RIGHT
+				return 49
+			else: # RIGHT STICK LEFT
+				return 50
 		3: # RIGHT STICK V AXIS
-			return 54
+			if joypad_input_motion.axis_value < 0: # RIGHT STICK UP
+				return 51
+			else: # RIGHT STICK DOWN
+				return 52 
 		5: # RIGHT TRIGGER
-			return 8
-		6: # LEFT TRIGGER
-			return 9
+			return 34
+		4: # LEFT TRIGGER
+			return 35
 		null:
 			return 10
 		_:
@@ -284,7 +283,7 @@ func keycode_to_frame_index(key_code_string: String) -> int:
 			return 57
 		"Escape":
 			return 60
-		"Control":
+		"Ctrl":
 			return 61
 		"Alt":
 			return 62

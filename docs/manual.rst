@@ -10,10 +10,10 @@ Manual
 
 
 
+
 Player Controller
 =================
 COGITO includes a first person player controller that has a variety of parameters and settings built-in. We recommend just reading through the descriptions and tweaking the parameters to your liking. Most common adjustments needed are walking, running and sprinting speeds, stair handling, and ladder handling. Be aware that a few of the player controller parameters will be controlled by the game options and are thus user controlled (for example Invert Y Axis).
-The controls are currently not rebindable in-game, but you can adjust them to your liking with the input map settings in the Godot project.
 
 **Default controls:**
 
@@ -22,6 +22,10 @@ The controls are currently not rebindable in-game, but you can adjust them to yo
 * Shift - Sprint
 * C - Crouch
 * F / E - Interact / Interact2
+* ESC - Pause Menu
+* Tab - Inventory
+* 1/2/3/4 - Quick Slots
+* Left Mouse Button / Right Mouse Button - Primary Action / Secondary Action
 
 
 .. tip::
@@ -630,6 +634,53 @@ The ``scene state`` is saved as a temporary state as soon as the player leaves t
 
 When the player loads a saved game, the scene as well as it’s state that is referenced in the ``player state`` is loaded. This works by checking if the player is currently in the scene that the ``player state`` has saved as the players location. If NOT, the game transitions to said scene and only then loads the ``player state`` and ``scene state``.
 If it exists, a temporary ``scene state`` is loaded when the player transitions into a scene. This is used to keep scene persistency, if the player is returning to this scene when they were previously in it. If no temporary ``scene state`` is found, the default scene is loaded.
+
+
+World State / World Dictionary (WIP)
+====================================
+At some point you will most likely want to save some data that represents the world state of your game. (eg. player has accomplished X)
+In Cogito, this data can dynamically be added and saved to what's called the ``World Dictionary``.
+
+**Accessing the World Dictionary**
+All values of the world dictionary are cached in the CogitoSceneManager.
+You can access the value of a property like this:
+``var property_value = CogitoSceneManager._current_world_dict.get(property)``
+
+You want to make sure that the CogitoSceneManager node is fully loaded before you check the dictionary. It is recommended to add
+``await CogitoSceneManager.is_node_ready()``
+before any checks to avoid null reference errors.
+
+
+**Setting up your starting world state**
+Find the ``MainMenu`` scene and select the ``MainMenu_SaveSlotManager`` node.
+In the Inspector, you find two exposed properties:
+``New Game Start Scene`` : This is where you reference which scene is loaded when a new game is started.
+``New Game World Dictionary`` : This is where you can set any key value pairs that will be set as the new game world dictionary.
+
+For example: If your game was Majora's Mask, you could set here that on a new game, the player starts with 72h of time left.
+Something like: KEY:"remaining_time", VALUE:"72"
+
+
+**Changing your world state in-game**
+To change your world state in game, you can use the ``world_property_setter`` script.
+
+This script is meant to be controlled via signals. You can define a dictionary with any properties you want to update.
+This will be sent to the world dictionary as soon as the signal is received.
+
+For example: In your game, your spaceship reactor can be powered on or off. So you define a world property called "spaceship_reactor_power".
+You can create a CogitoSwitch and add a child node with the ``world_property_setter`` script attached. On this script you define two dictionaries:
+One contains the property "spaceship_reactor_power" set to ON, the other contains the "spaceship_reactor_power" set to OFF.
+Now you connect the ``switched(is_on: bool)`` signal to the ``on_bool_signal`` function. Done!
+
+When the switch is pressed, it will change the "spaceship_reactor_power" world property to ON or OFF. And you can check this property from any script
+or object in any scene as outlined above.
+
+
+
+Cogito Settings
+===============
+Cogito uses a handful of settings and variables that are stored in a custom resource called ``CogitoSettings``, which you can find if you open the ``CogitoSettings.tres`` in the /addons/cogito/ directory.
+Changing any of these values and saving the resource should then take effect immediately.
 
 
 

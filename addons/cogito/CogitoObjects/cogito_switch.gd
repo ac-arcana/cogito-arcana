@@ -37,6 +37,7 @@ var player_interaction_component : PlayerInteractionComponent
 var interaction_nodes : Array[Node]
 var cogito_properties : CogitoProperties = null
 
+@onready var audio_stream_player_3d = $AudioStreamPlayer3D
 var is_holding_item : bool
 
 #endregion
@@ -47,6 +48,7 @@ func _ready():
 	add_to_group("save_object_state")
 	interaction_nodes = find_children("","InteractionComponent",true) #Grabs all attached interaction components
 	
+	audio_stream_player_3d.stream = switch_sound
 	
 	if is_on:
 		switch_on()
@@ -54,6 +56,8 @@ func _ready():
 		switch_off()
 		
 	find_cogito_properties()
+	
+	
 func find_cogito_properties():
 	var property_nodes = find_children("","CogitoProperties",true) #Grabs all attached property components
 	if property_nodes:
@@ -65,7 +69,7 @@ func interact(_player_interaction_component):
 	if !allows_repeated_interaction and is_on:
 		player_interaction_component.send_hint(null, has_been_used_hint)
 		return
-
+		
 	if !needs_item_to_operate:
 		switch()
 	else:
@@ -74,7 +78,7 @@ func interact(_player_interaction_component):
 			var inventory = player_interaction_component.get_parent().inventory_data
 			inventory.pick_up_slot_data(required_item_slot)
 			
-			CogitoMain.debug_log(true,"cogito_switch.gd","Item " + required_item_slot.inventory_item.name + " added to player inventory")
+			CogitoGlobals.debug_log(true,"cogito_switch.gd","Item " + required_item_slot.inventory_item.name + " added to player inventory")
 			is_holding_item = false
 			
 			if is_on: switch_off()
@@ -91,11 +95,10 @@ func interact(_player_interaction_component):
 
 
 func switch():
+	audio_stream_player_3d.play()
 	if needs_item_to_operate and !is_holding_item:
 		if !check_for_item():
 			return
-	
-	Audio.play_sound_3d(switch_sound).global_position = global_position
 	
 	if !is_on:
 		switch_on()
@@ -152,12 +155,10 @@ func check_for_item() -> bool:
 	if item_hint != "":
 		player_interaction_component.send_hint(null,item_hint) # Sends the key hint with the default hint icon.
 	return false
-	
-	
-func _on_damage_received():
-	if !needs_item_to_operate:
-		interact(CogitoSceneManager._current_player_node.player_interaction_component)
 
+
+func _on_damage_received(_damage,_bullet_direction,_bullet_position):
+	interact(CogitoSceneManager._current_player_node.player_interaction_component)
 
 func set_state():
 	if is_on:
@@ -183,7 +184,7 @@ func save():
 	var state_dict = {
 		"node_path" : self.get_path(),
 		"is_on" : is_on,
-		"is_holding_item": is_holding_item,
+		"is_holding_item" : is_holding_item,
 		"pos_x" : position.x,
 		"pos_y" : position.y,
 		"pos_z" : position.z,

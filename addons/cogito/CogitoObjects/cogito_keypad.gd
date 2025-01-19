@@ -98,7 +98,7 @@ func close(_player_interaction_component):
 
 func _on_button_received(_passed_string:String):
 	if !is_locked:
-		print("Already unlocked!")
+		CogitoGlobals.debug_log(true, "cogito_keypad.gd","Already unlocked!")
 		return
 	
 	if !is_open:
@@ -120,7 +120,7 @@ func append_to_entered_code(_code_digit:String):
 		if entered_code.length() == passcode.length():
 			check_entered_code()
 	else:
-		print("Maximum code length reached")
+		CogitoGlobals.debug_log(true, "cogito_keypad.gd", "Maximum code length reached")
 
 
 func update_code_display():

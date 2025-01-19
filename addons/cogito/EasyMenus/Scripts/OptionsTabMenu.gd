@@ -25,8 +25,8 @@ var mouse_sens : float
 var headbob_strength : int
 
 # AUDIO
-@onready var sfx_volume_slider : HSliderWLabel = $%SFXVolumeSlider
-@onready var music_volume_slider: HSliderWLabel = $%MusicVolumeSlider
+@onready var sfx_volume_slider : HSliderWLabel = %HBoxContainer_SFXVolumeSlider
+@onready var music_volume_slider: HSliderWLabel = %HBoxContainer_MusicVolumeSlider
 
 var sfx_bus_index
 var music_bus_index
@@ -71,23 +71,65 @@ const RESOLUTION_DICTIONARY : Dictionary = {
 	"3840x2160 (16:9)" : Vector2i(3840,2160),
 }
 
+# INPUT BINDING
+@export var remap_entry: PackedScene
+@export var separator_entry: PackedScene
+
+@onready var bindings_container: VBoxContainer = %BindingsContainer
+
+var input_actions = {
+	"separator_movement": "MOVEMENT",
+	"forward": "Move forward",
+	"back": "Move back",
+	"left": "Move left",
+	"right": "Move right",
+	"jump": "Jump",
+	"crouch": "Crouch",
+	"separator_actions": "ACTIONS",
+	"action_primary": "Primary Action",
+	"action_secondary": "Secondary Action",
+	"interact": "Interact 1",
+	"interact2": "Interact 2",
+	"reload": "Reload",
+	"quickslot_1": "Quickslot 1",
+	"quickslot_2": "Quickslot 2",
+	"quickslot_3": "Quickslot 3",
+	"quickslot_4": "Quickslot 4",
+	"separator_inventory": "MENUS",
+	"menu": "Pause",
+	"inventory": "Inventory",
+	"inventory_drop_item": "Quick Drop Item",
+	"inventory_move_item": "Move Item",
+	"inventory_use_item": "Use Item",
+}
+
+const serialized_default_inputs : String = "{\"action_primary\":{\"joypad\":[\"5|0.345098\"],\"keyboard\":[],\"mouse\":[1]},\"action_secondary\":{\"joypad\":[\"4|0.223529\"],\"keyboard\":[],\"mouse\":[2]},\"back\":{\"joypad\":[\"1|0.207062\"],\"keyboard\":[\"S\"],\"mouse\":[]},\"crouch\":{\"joypad\":[1],\"keyboard\":[\"C\"],\"mouse\":[]},\"forward\":{\"joypad\":[\"1|-0.225074\"],\"keyboard\":[\"W\"],\"mouse\":[]},\"free_look\":{\"joypad\":[],\"keyboard\":[\"CapsLock\"],\"mouse\":[]},\"interact\":{\"joypad\":[2],\"keyboard\":[\"F\"],\"mouse\":[]},\"interact2\":{\"joypad\":[3],\"keyboard\":[\"E\"],\"mouse\":[]},\"inventory\":{\"joypad\":[4],\"keyboard\":[\"Tab\"],\"mouse\":[]},\"inventory_drop_item\":{\"joypad\":[3],\"keyboard\":[\"G\"],\"mouse\":[]},\"inventory_move_item\":{\"joypad\":[0],\"keyboard\":[],\"mouse\":[1]},\"inventory_use_item\":{\"joypad\":[1],\"keyboard\":[],\"mouse\":[2]},\"jump\":{\"joypad\":[0],\"keyboard\":[\"Space\"],\"mouse\":[]},\"left\":{\"joypad\":[\"0|-0.172882\"],\"keyboard\":[\"A\"],\"mouse\":[]},\"menu\":{\"joypad\":[6],\"keyboard\":[\"Escape\"],\"mouse\":[]},\"quickslot_1\":{\"joypad\":[13],\"keyboard\":[\"1\"],\"mouse\":[]},\"quickslot_2\":{\"joypad\":[11],\"keyboard\":[\"2\"],\"mouse\":[]},\"quickslot_3\":{\"joypad\":[14],\"keyboard\":[\"3\"],\"mouse\":[]},\"quickslot_4\":{\"joypad\":[12],\"keyboard\":[\"4\"],\"mouse\":[]},\"reload\":{\"joypad\":[2],\"keyboard\":[\"R\"],\"mouse\":[]},\"right\":{\"joypad\":[\"0|0.136204\"],\"keyboard\":[\"D\"],\"mouse\":[]},\"sprint\":{\"joypad\":[7],\"keyboard\":[\"Shift\"],\"mouse\":[]},\"ui_accept\":{\"joypad\":[0],\"keyboard\":[\"Enter\",\"Kp Enter\",\"Space\"],\"mouse\":[]},\"ui_cancel\":{\"joypad\":[1],\"keyboard\":[\"Escape\"],\"mouse\":[]},\"ui_copy\":{\"joypad\":[],\"keyboard\":[\"C|ctrl\",\"Insert|ctrl\"],\"mouse\":[]},\"ui_cut\":{\"joypad\":[],\"keyboard\":[\"X|ctrl\",\"Delete|shift\"],\"mouse\":[]},\"ui_down\":{\"joypad\":[12,\"1|1.000000\"],\"keyboard\":[\"Down\"],\"mouse\":[]},\"ui_end\":{\"joypad\":[],\"keyboard\":[\"End\"],\"mouse\":[]},\"ui_filedialog_refresh\":{\"joypad\":[],\"keyboard\":[\"F5\"],\"mouse\":[]},\"ui_filedialog_show_hidden\":{\"joypad\":[],\"keyboard\":[\"H\"],\"mouse\":[]},\"ui_filedialog_up_one_level\":{\"joypad\":[],\"keyboard\":[\"Backspace\"],\"mouse\":[]},\"ui_focus_next\":{\"joypad\":[],\"keyboard\":[\"Tab\"],\"mouse\":[]},\"ui_focus_prev\":{\"joypad\":[],\"keyboard\":[\"Tab|shift\"],\"mouse\":[]},\"ui_graph_delete\":{\"joypad\":[],\"keyboard\":[\"Delete\"],\"mouse\":[]},\"ui_graph_duplicate\":{\"joypad\":[],\"keyboard\":[\"D|ctrl\"],\"mouse\":[]},\"ui_home\":{\"joypad\":[],\"keyboard\":[\"Home\"],\"mouse\":[]},\"ui_left\":{\"joypad\":[13,\"0|-1.000000\"],\"keyboard\":[\"Left\"],\"mouse\":[]},\"ui_menu\":{\"joypad\":[],\"keyboard\":[\"Menu\"],\"mouse\":[]},\"ui_next_tab\":{\"joypad\":[10],\"keyboard\":[\"E\"],\"mouse\":[]},\"ui_page_down\":{\"joypad\":[],\"keyboard\":[\"PageDown\"],\"mouse\":[]},\"ui_page_up\":{\"joypad\":[],\"keyboard\":[\"PageUp\"],\"mouse\":[]},\"ui_paste\":{\"joypad\":[],\"keyboard\":[\"V|ctrl\",\"Insert|shift\"],\"mouse\":[]},\"ui_prev_tab\":{\"joypad\":[9],\"keyboard\":[\"Q\"],\"mouse\":[]},\"ui_redo\":{\"joypad\":[],\"keyboard\":[\"Z|shift,ctrl\",\"Y|ctrl\"],\"mouse\":[]},\"ui_right\":{\"joypad\":[14,\"0|1.000000\"],\"keyboard\":[\"Right\"],\"mouse\":[]},\"ui_select\":{\"joypad\":[3],\"keyboard\":[\"Space\"],\"mouse\":[]},\"ui_swap_input_direction\":{\"joypad\":[],\"keyboard\":[\"QuoteLeft|ctrl\"],\"mouse\":[]},\"ui_text_add_selection_for_next_occurrence\":{\"joypad\":[],\"keyboard\":[\"D|ctrl\"],\"mouse\":[]},\"ui_text_backspace\":{\"joypad\":[],\"keyboard\":[\"Backspace\",\"Backspace|shift\"],\"mouse\":[]},\"ui_text_backspace_all_to_left\":{\"joypad\":[],\"keyboard\":[],\"mouse\":[]},\"ui_text_backspace_all_to_left.macos\":{\"joypad\":[],\"keyboard\":[\"Backspace|ctrl\"],\"mouse\":[]},\"ui_text_backspace_word\":{\"joypad\":[],\"keyboard\":[\"Backspace|ctrl\"],\"mouse\":[]},\"ui_text_backspace_word.macos\":{\"joypad\":[],\"keyboard\":[\"Backspace|alt\"],\"mouse\":[]},\"ui_text_caret_add_above\":{\"joypad\":[],\"keyboard\":[\"Up|shift,ctrl\"],\"mouse\":[]},\"ui_text_caret_add_above.macos\":{\"joypad\":[],\"keyboard\":[\"O|shift,ctrl\"],\"mouse\":[]},\"ui_text_caret_add_below\":{\"joypad\":[],\"keyboard\":[\"Down|shift,ctrl\"],\"mouse\":[]},\"ui_text_caret_add_below.macos\":{\"joypad\":[],\"keyboard\":[\"L|shift,ctrl\"],\"mouse\":[]},\"ui_text_caret_document_end\":{\"joypad\":[],\"keyboard\":[\"End|ctrl\"],\"mouse\":[]},\"ui_text_caret_document_end.macos\":{\"joypad\":[],\"keyboard\":[\"Down|ctrl\",\"End|ctrl\"],\"mouse\":[]},\"ui_text_caret_document_start\":{\"joypad\":[],\"keyboard\":[\"Home|ctrl\"],\"mouse\":[]},\"ui_text_caret_document_start.macos\":{\"joypad\":[],\"keyboard\":[\"Up|ctrl\",\"Home|ctrl\"],\"mouse\":[]},\"ui_text_caret_down\":{\"joypad\":[],\"keyboard\":[\"Down\"],\"mouse\":[]},\"ui_text_caret_left\":{\"joypad\":[],\"keyboard\":[\"Left\"],\"mouse\":[]},\"ui_text_caret_line_end\":{\"joypad\":[],\"keyboard\":[\"End\"],\"mouse\":[]},\"ui_text_caret_line_end.macos\":{\"joypad\":[],\"keyboard\":[\"E|ctrl\",\"Right|ctrl\",\"End\"],\"mouse\":[]},\"ui_text_caret_line_start\":{\"joypad\":[],\"keyboard\":[\"Home\"],\"mouse\":[]},\"ui_text_caret_line_start.macos\":{\"joypad\":[],\"keyboard\":[\"A|ctrl\",\"Left|ctrl\",\"Home\"],\"mouse\":[]},\"ui_text_caret_page_down\":{\"joypad\":[],\"keyboard\":[\"PageDown\"],\"mouse\":[]},\"ui_text_caret_page_up\":{\"joypad\":[],\"keyboard\":[\"PageUp\"],\"mouse\":[]},\"ui_text_caret_right\":{\"joypad\":[],\"keyboard\":[\"Right\"],\"mouse\":[]},\"ui_text_caret_up\":{\"joypad\":[],\"keyboard\":[\"Up\"],\"mouse\":[]},\"ui_text_caret_word_left\":{\"joypad\":[],\"keyboard\":[\"Left|ctrl\"],\"mouse\":[]},\"ui_text_caret_word_left.macos\":{\"joypad\":[],\"keyboard\":[\"Left|alt\"],\"mouse\":[]},\"ui_text_caret_word_right\":{\"joypad\":[],\"keyboard\":[\"Right|ctrl\"],\"mouse\":[]},\"ui_text_caret_word_right.macos\":{\"joypad\":[],\"keyboard\":[\"Right|alt\"],\"mouse\":[]},\"ui_text_clear_carets_and_selection\":{\"joypad\":[],\"keyboard\":[\"Escape\"],\"mouse\":[]},\"ui_text_completion_accept\":{\"joypad\":[],\"keyboard\":[\"Enter\",\"Kp Enter\"],\"mouse\":[]},\"ui_text_completion_query\":{\"joypad\":[],\"keyboard\":[\"Space|ctrl\"],\"mouse\":[]},\"ui_text_completion_replace\":{\"joypad\":[],\"keyboard\":[\"Tab\"],\"mouse\":[]},\"ui_text_dedent\":{\"joypad\":[],\"keyboard\":[\"Tab|shift\"],\"mouse\":[]},\"ui_text_delete\":{\"joypad\":[],\"keyboard\":[\"Delete\"],\"mouse\":[]},\"ui_text_delete_all_to_right\":{\"joypad\":[],\"keyboard\":[],\"mouse\":[]},\"ui_text_delete_all_to_right.macos\":{\"joypad\":[],\"keyboard\":[\"Delete|ctrl\"],\"mouse\":[]},\"ui_text_delete_word\":{\"joypad\":[],\"keyboard\":[\"Delete|ctrl\"],\"mouse\":[]},\"ui_text_delete_word.macos\":{\"joypad\":[],\"keyboard\":[\"Delete|alt\"],\"mouse\":[]},\"ui_text_indent\":{\"joypad\":[],\"keyboard\":[\"Tab\"],\"mouse\":[]},\"ui_text_newline\":{\"joypad\":[],\"keyboard\":[\"Enter\",\"Kp Enter\"],\"mouse\":[]},\"ui_text_newline_above\":{\"joypad\":[],\"keyboard\":[\"Enter|shift,ctrl\",\"Kp Enter|shift,ctrl\"],\"mouse\":[]},\"ui_text_newline_blank\":{\"joypad\":[],\"keyboard\":[\"Enter|ctrl\",\"Kp Enter|ctrl\"],\"mouse\":[]},\"ui_text_scroll_down\":{\"joypad\":[],\"keyboard\":[\"Down|ctrl\"],\"mouse\":[]},\"ui_text_scroll_down.macos\":{\"joypad\":[],\"keyboard\":[\"Down|alt,ctrl\"],\"mouse\":[]},\"ui_text_scroll_up\":{\"joypad\":[],\"keyboard\":[\"Up|ctrl\"],\"mouse\":[]},\"ui_text_scroll_up.macos\":{\"joypad\":[],\"keyboard\":[\"Up|alt,ctrl\"],\"mouse\":[]},\"ui_text_select_all\":{\"joypad\":[],\"keyboard\":[\"A|ctrl\"],\"mouse\":[]},\"ui_text_select_word_under_caret\":{\"joypad\":[],\"keyboard\":[\"G|alt\"],\"mouse\":[]},\"ui_text_select_word_under_caret.macos\":{\"joypad\":[],\"keyboard\":[\"G|ctrl,meta\"],\"mouse\":[]},\"ui_text_skip_selection_for_next_occurrence\":{\"joypad\":[],\"keyboard\":[\"D|alt,ctrl\"],\"mouse\":[]},\"ui_text_submit\":{\"joypad\":[],\"keyboard\":[\"Enter\",\"Kp Enter\"],\"mouse\":[]},\"ui_text_toggle_insert_mode\":{\"joypad\":[],\"keyboard\":[\"Insert\"],\"mouse\":[]},\"ui_undo\":{\"joypad\":[],\"keyboard\":[\"Z|ctrl\"],\"mouse\":[]},\"ui_up\":{\"joypad\":[11,\"1|-1.000000\"],\"keyboard\":[\"Up\"],\"mouse\":[]}}"
+
 
 func _ready() -> void:
+	# GAMEPLAY
 	add_headbob_items()
 	headbob_option_button.item_selected.connect(on_headbob_selected)
 	mouse_sens_slider.value_changed.connect(_on_mouse_sens_slider_value_changed)
 	gp_look_sens_slider.value_changed.connect(_on_gp_looksens_slider_value_changed)
+	
+	# GRAPHICS
 	add_window_mode_items()
 	add_resolution_items()
 	window_mode_option_button.item_selected.connect(on_window_mode_selected)
 	resolution_option_button.item_selected.connect(on_resolution_selected)
+	render_scale_slider.value_changed.connect(_on_render_scale_slider_value_changed)
+	gui_scale_slider.value_changed.connect(_on_gui_scale_slider_value_changed)
 	
+	# AUDIO
 	sfx_bus_index = AudioServer.get_bus_index(OptionsConstants.sfx_bus_name)
 	music_bus_index = AudioServer.get_bus_index(OptionsConstants.music_bus_name)
 	sfx_volume_slider.hslider.value_changed.connect(_on_sfx_volume_slider_value_changed)
 	music_volume_slider.hslider.value_changed.connect(_on_music_volume_slider_value_changed)
 	
 	load_options()
+	load_keybindings_from_config()
+	create_action_remap_items()
 
 
 # Called from outside initializes the options menu
@@ -146,6 +188,11 @@ func refresh_render():
 	get_window().size = render_resolution
 	get_window().content_scale_size = render_resolution
 	get_window().scaling_3d_scale = render_scale_val
+	
+	var msaa_2d = config.get_value(OptionsConstants.section_name, OptionsConstants.msaa_2d_key, 0)
+	var msaa_3d = config.get_value(OptionsConstants.section_name, OptionsConstants.msaa_3d_key, 0)
+	set_msaa("msaa_2d", msaa_2d)
+	set_msaa("msaa_3d", msaa_3d)
 
 
 # Function to change resolution. Hooked up to the resolution_option_button.
@@ -166,7 +213,6 @@ func _on_music_volume_slider_value_changed(value):
 
 # Sets the volume for the given audio bus
 func set_volume(bus_index, value):
-	print("Setting volume on bus_index ", bus_index, " to ", value)
 	AudioServer.set_bus_volume_db(bus_index, linear_to_db(value))
 
 
@@ -188,14 +234,21 @@ func save_options():
 	config.set_value(OptionsConstants.section_name, OptionsConstants.sfx_volume_key_name, sfx_volume_slider.hslider.value)
 	config.set_value(OptionsConstants.section_name, OptionsConstants.music_volume_key_name, music_volume_slider.hslider.value)
 	
-	config.save(OptionsConstants.config_file_name)
+	# SAVING INPUT MAP
+	var serialized_inputs = InputHelper.serialize_inputs_for_actions()
+	config.set_value(OptionsConstants.key_binds, OptionsConstants.input_helper_string, serialized_inputs)
+	
+	if	config.save(OptionsConstants.config_file_name) != OK:
+		CogitoGlobals.debug_log(true, "OptionsTabMenu.gd", "Saving config file failed.")
+	else:
+		CogitoGlobals.debug_log(true, "OptionsTabMenu.gd","Saving config file OK")
 
 
 # Loads options and sets the controls values to loaded values. Uses default values if config file does not exist
 func load_options(skip_applying:bool = false):
 	var err = config.load(OptionsConstants.config_file_name)
 	if err != 0:
-		print("Loading options config failed. Assuming and saving defaults.")
+		CogitoGlobals.debug_log(true, "OptionsTabMenu.gd","Loading options config failed. Assuming and saving defaults.")
 	
 	var invert_y = config.get_value(OptionsConstants.section_name, OptionsConstants.invert_vertical_axis_key, true)
 	var toggle_crouching = config.get_value(OptionsConstants.section_name, OptionsConstants.toggle_crouching_key, true)
@@ -275,14 +328,13 @@ func _on_render_scale_slider_value_changed(value):
 
 
 func _on_gui_scale_slider_value_changed(value):
-	gui_scale_current_value_label.text = str(value)
+	apply_gui_scale_value()
 
 	
 func _on_gui_scale_slider_drag_ended(_value_changed):
 	apply_gui_scale_value()
 
 
-# TODO: Apply changes if the slider is clicked but not dragged
 func apply_gui_scale_value():
 	get_viewport().content_scale_factor = gui_scale_slider.value
 	gui_scale_current_value_label.text = str(gui_scale_slider.value)
@@ -319,11 +371,46 @@ func set_msaa(mode, index):
 			get_viewport().set(mode,Viewport.MSAA_8X)
 
 
+func load_keybindings_from_config():
+	var err = config.load(OptionsConstants.config_file_name)
+	if err != 0:
+		CogitoGlobals.debug_log(true, "OptionsTabMenu.gd","Keybindings: Loading options config failed.")
+		#save_keybindings_to_config()
+		
+	var serialized_inputs = config.get_value(OptionsConstants.key_binds, OptionsConstants.input_helper_string, serialized_default_inputs)
+	if serialized_inputs:
+		InputHelper.deserialize_inputs_for_actions(serialized_inputs)
+	else:
+		CogitoGlobals.debug_log(true, "OptionsTabMenu.gd","Keybindings: No saved bindings found.")
+
+
+
+func save_keybindings_to_config():
+	var serialized_inputs = InputHelper.serialize_inputs_for_actions()
+	config.set_value(OptionsConstants.key_binds, OptionsConstants.input_helper_string, serialized_inputs)
+	config.save(OptionsConstants.config_file_name)
+
+	
+func create_action_remap_items() -> void:
+	for action in input_actions:
+		if action.contains("separator"):
+			var separator = separator_entry.instantiate()
+			bindings_container.add_child(separator)
+			separator.separator_text = input_actions[action]
+		else:
+			var input_entry = remap_entry.instantiate()
+			input_entry.action = action
+			bindings_container.add_child(input_entry)
+			input_entry.label.text = input_actions[action]
+
+
+
 func _on_apply_changes_pressed() -> void:
 	window_mode_option_button.item_selected.emit(window_mode_option_button.selected)
+	save_options()
 	if have_options_changed:
 		refresh_render()
-	save_options()
+	
 	options_updated.emit()
 
 func _on_tab_menu_resume():
