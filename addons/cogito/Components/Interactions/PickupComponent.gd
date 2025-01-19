@@ -1,5 +1,5 @@
 extends InteractionComponent
-class_name CogitoPickupComponent
+class_name PickupComponent
 
 @export var slot_data : InventorySlotPD
 
