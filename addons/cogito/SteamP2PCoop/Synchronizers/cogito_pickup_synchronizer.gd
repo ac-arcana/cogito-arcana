@@ -12,7 +12,7 @@ func _ready():
 
 
 func _on_multiplayer_level_spawner_level_loaded():
-	pickup_array = level_spawner.find_children("", "CogitoPickupComponent", true, false)
+	pickup_array = level_spawner.find_children("", "PickupComponent", true, false)
 	for pickup in pickup_array:
 		pickup.was_interacted_with.connect(_on_pickup.bind(pickup))
 
