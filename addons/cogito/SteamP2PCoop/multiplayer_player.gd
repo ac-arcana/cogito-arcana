@@ -18,6 +18,12 @@ extends CogitoPlayer
 ## This is to prevent lerping from the starting sync values (0,0,0)
 var synced_after_spawn = false
 
+## only call ready when its the local player, so that the local player remains the referenced player in the local scene manager
+func _ready():
+	if name == str(multiplayer.get_unique_id()):	
+		CogitoSceneManager._player_state = CogitoSceneManager.get_existing_player_state(CogitoSceneManager._active_slot) 
+		super()
+
 func _enter_tree():
 	## when the game is starting single player mode we don't want to lose authority
 	if not multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
